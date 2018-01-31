@@ -18,3 +18,5 @@ Route::post('user', 'user/login');
 Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');
 // 用户注册
 Route::post('user/register', 'user/register');
+// 用户登录
+Route::post('user/login', 'user/login');

@@ -5,7 +5,18 @@ use think\db;
 class User extends Common {
 	public function login() {
 		$data = $this->params;
-		dump($data);
+		$user_name_type = $this->check_username($data['user_name']);
+		$this->check_exist($data['user_name'], $user_name_type, 1);
+		$db_res = db('user')
+			->where('user_' . $user_name_type, '=', $data['user_name'])
+			->where('user_psd', '=', $data['user_psd'])
+			->find();
+		if (!$db_res) {
+			$this->return_msg(400, '密码不正确');
+		} else {
+			unset($db_res['user_psd']);
+			$this->return_msg(200, '登录成功', $db_res);
+		}
 	}
 	public function register() {
 		$data = $this->params;
