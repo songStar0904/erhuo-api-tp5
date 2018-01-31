@@ -9,19 +9,10 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-// return [
-//     '__pattern__' => [
-//         'name' => '\w+',
-//     ],
-//     '[hello]'     => [
-//         ':id'   => ['index/hello', ['method' => 'get'], ['id' => '\d+']],
-//         ':name' => ['index/hello', ['method' => 'post']],
-//     ],
-
-// ];
-
 use think\Route;
 
 Route::domain('api', 'api');
 
 Route::post('user', 'user/login');
+// 获取验证码
+Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');

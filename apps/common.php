@@ -11,7 +11,9 @@
 
 // 应用公共文件
 namespace app\api\controller;
+use phpmailer\PHPMailer;
 use think\Controller;
+use think\db;
 use think\Request;
 use think\Validate;
 
@@ -24,6 +26,12 @@ class Common extends Controller {
 			'login' => array(
 				'user_name' => ['require', 'chsDash', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],
+			),
+		),
+		'Code' => array(
+			'get_code' => array(
+				'username' => 'require',
+				'is_exist' => 'require|number|length:1',
 			),
 		));
 	protected function _initialize() {
@@ -65,6 +73,7 @@ class Common extends Controller {
 			$this->return_msg(400, 'token值不正确');
 		}
 	}
+	// 过滤参数
 	public function check_params($arr) {
 		$rule = $this->rules[$this->request->controller()][$this->request->action()];
 		$this->validate = new Validate($rule);
@@ -73,5 +82,75 @@ class Common extends Controller {
 		}
 		// 通过验证
 		return $arr;
+	}
+	// 判断手机还是邮箱
+	public function check_username($username) {
+		$is_email = Validate::is($username, 'email') ? 1 : 0;
+		$is_phone = preg_match('/^(13[0-9]|14[5|7]|15[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/', $username) ? 4 : 2;
+		$flag = $is_email + $is_phone;
+		switch ($flag) {
+		case 2:
+			$this->return_msg(400, '邮箱或手机号不正确');
+			break;
+		case 3:
+			return 'email';
+			break;
+		case 4:
+			return 'phone';
+			break;
+		}
+	}
+	// 判断邮箱手机是否存在
+	public function check_exist($value, $type, $exist) {
+		$type_num = $type == 'phone' ? 2 : 4;
+		$flag = $type_num + $exist;
+		$res = db('user')->where('user_' . $type, $value)->find();
+		switch ($flag) {
+		case 2:
+			if ($res) {
+				$this->return_msg(400, '此手机号已被占用');
+			}
+			break;
+		case 3:
+			if (!$res) {
+				$this->return_msg(400, '此手机号不存在');
+			}
+			break;
+		case 4:
+			if ($res) {
+				$this->return_msg(400, '此邮箱已被占用');
+			}
+			break;
+		case 5:
+			if (!$res) {
+				$this->return_msg(400, '此邮箱不存在');
+			}
+			break;
+
+		}
+
+	}
+	// 发送邮箱
+	public function send_email($email, $value) {
+		$mail = new PHPMailer();
+		// $mail->SMTPDebug = 2;
+		$mail->isSMTP();
+		$mail->CharSet = 'utf8';
+		$mail->Host = 'smtp.163.com';
+		$mail->SMTPAuth = true;
+		$mail->Username = '15574406229@163.com';
+		$mail->Password = 'song5201314';
+		$mail->SMTPSecure = 'ssl';
+		$mail->Port = 994;
+		$mail->setFrom('15574406229@163.com', '接口测试');
+		$mail->addAddress($email, 'test');
+		$mail->addReplyTo('15574406229@163.com', 'Reply');
+		$mail->Subject = $value['subject'];
+		$mail->Body = $value['body'];
+		if (!$mail->send()) {
+			$this->return_msg(400, $mail->ErrorInfo);
+		} else {
+			$this->return_msg(200, $value['return_msg']);
+		}
 	}
 }
