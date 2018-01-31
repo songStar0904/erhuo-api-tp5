@@ -29,9 +29,9 @@ class Code extends Common {
 		$code = $this->make_code(6);
 		// 试用session存储验证码，md5加密
 		$md5_code = md5($username . '_' . md5($code));
-		session($username . '_code' . $md5_code);
+		session($username . '_code', $md5_code);
 		// 使用session存储验证码发送时间
-		session($username . '_last_send_time' . time());
+		session($username . '_last_send_time', time());
 		// 发送验证码
 		if ($type == 'phone') {
 			$this->send_code_to_phone($username, $code);
@@ -55,7 +55,7 @@ class Code extends Common {
 	}
 	// 发送验证码 给邮箱
 	public function send_code_to_email($email, $code) {
-		$value['body'] = '这是测试邮件，您的验证码是' . $code . '，邮箱时间1分钟';
+		$value['body'] = '这是测试邮件，您的验证码是' . $code . '，邮箱时间5分钟';
 		$value['subject'] = '您有新的验证码!';
 		$value['return_msg'] = '验证码已发送成功，请注意查收！';
 		$this->send_email($email, $value);

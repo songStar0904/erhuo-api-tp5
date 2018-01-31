@@ -27,6 +27,11 @@ class Common extends Controller {
 				'user_name' => ['require', 'chsDash', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],
 			),
+			'register' => array(
+				'user_name' => ['require', 'max' => 20],
+				'user_psd' => ['require', 'length' => 32],
+				'code' => 'require|number|length:6',
+			),
 		),
 		'Code' => array(
 			'get_code' => array(
@@ -152,5 +157,17 @@ class Common extends Controller {
 		} else {
 			$this->return_msg(200, $value['return_msg']);
 		}
+	}
+	// 检测验证码是否正确
+	public function check_code($username, $code) {
+		$last_time = session($username . '_last_send_time');
+		if (time() - $last_time > 60 * 5) {
+			$this->return_msg(400, '验证超时， 请在五分钟内验证');
+		}
+		$md5_code = md5($username . '_' . md5($code));
+		if (session($username . '_code') !== $md5_code) {
+			$this->return_msg(400, '验证码不正确');
+		}
+		session($username . '_code', null);
 	}
 }

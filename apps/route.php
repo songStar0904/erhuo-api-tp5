@@ -16,3 +16,5 @@ Route::domain('api', 'api');
 Route::post('user', 'user/login');
 // 获取验证码
 Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');
+// 用户注册
+Route::post('user/register', 'user/register');
