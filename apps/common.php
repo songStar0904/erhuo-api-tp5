@@ -47,6 +47,11 @@ class Common extends Controller {
 				'user_psd' => ['require', 'length' => 32],
 				'code' => 'require|number|length:6',
 			),
+			'bind_username' => array(
+				'user_id' => 'require|number',
+				'user_name' => ['require', 'max' => 20],
+				'code' => 'require|number|length:6',
+			),
 		),
 		'Code' => array(
 			'get_code' => array(
@@ -182,6 +187,7 @@ class Common extends Controller {
 			$this->return_msg(400, '验证超时， 请在五分钟内验证');
 		}
 		$md5_code = md5($username . '_' . md5($code));
+		dump(session($username . '_code'));
 		if (session($username . '_code') !== $md5_code) {
 			$this->return_msg(400, '验证码不正确');
 		}

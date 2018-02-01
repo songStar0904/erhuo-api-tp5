@@ -77,4 +77,20 @@ class User extends Common {
 			$this->return_msg(400, '密码修改失败');
 		}
 	}
+	public function bind_username() {
+		$data = $this->params;
+		$user_name_type = $this->check_username($data['user_name']);
+		if ($user_name_type == 'phone') {
+			$name_type = '手机';
+		} else {
+			$name_type = '邮箱';
+		}
+		$this->check_code($data['user_name'], $data['code']);
+		$res = db('user')->where('user_id', $data['user_id'])->setField('user_' . $user_name_type, $data['user_name']);
+		if ($res !== false) {
+			$this->return_msg(200, $name_type . '绑定成功');
+		} else {
+			$this->return_msg(400, $name_type . '绑定失败');
+		}
+	}
 }

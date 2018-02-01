@@ -26,3 +26,5 @@ Route::post('user/upload', 'user/upload');
 Route::post('user/change_psd', 'user/change_psd');
 // 找回密码
 Route::post('user/find_psd', 'user/find_psd');
+// 绑定手机或邮箱
+Route::post('user/bind_username', 'user/bind_username');
