@@ -42,6 +42,11 @@ class Common extends Controller {
 				'user_old_psd' => ['require', 'length' => 32],
 				'user_psd' => ['require', 'length' => 32],
 			),
+			'find_psd' => array(
+				'user_name' => ['require', 'max' => 20],
+				'user_psd' => ['require', 'length' => 32],
+				'code' => 'require|number|length:6',
+			),
 		),
 		'Code' => array(
 			'get_code' => array(

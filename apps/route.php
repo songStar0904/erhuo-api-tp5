@@ -24,3 +24,5 @@ Route::post('user/login', 'user/login');
 Route::post('user/upload', 'user/upload');
 // 修改密码
 Route::post('user/change_psd', 'user/change_psd');
+// 找回密码
+Route::post('user/find_psd', 'user/find_psd');

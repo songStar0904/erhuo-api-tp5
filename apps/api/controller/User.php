@@ -60,8 +60,21 @@ class User extends Common {
 		}
 		$res = db('user')->where('user_' . $user_name_type, $data['user_name'])->setField('user_psd', $data['user_psd']);
 		if ($res !== false) {
-			$this->return_msg(200, '修改成功');
+			$this->return_msg(200, '密码修改成功');
+		} else {
+			$this->return_msg(400, '密码修改失败');
 		}
-
+	}
+	public function find_psd() {
+		$data = $this->params;
+		$user_name_type = $this->check_username($data['user_name']);
+		$this->check_exist($data['user_name'], $user_name_type, 1);
+		$this->check_code($data['user_name'], $data['code']);
+		$res = db('user')->where('user_' . $user_name_type, $data['user_name'])->setField('user_psd', $data['user_psd']);
+		if ($res !== false) {
+			$this->return_msg(200, '密码修改成功');
+		} else {
+			$this->return_msg(400, '密码修改失败');
+		}
 	}
 }
