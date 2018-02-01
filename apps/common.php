@@ -14,6 +14,7 @@ namespace app\api\controller;
 use phpmailer\PHPMailer;
 use think\Controller;
 use think\db;
+use think\Image;
 use think\Request;
 use think\Validate;
 
@@ -32,6 +33,15 @@ class Common extends Controller {
 				'user_psd' => ['require', 'length' => 32],
 				'code' => 'require|number|length:6',
 			),
+			'upload' => array(
+				'user_id' => 'require|number',
+				'user_icon' => 'require|image|fileSize:2000000|fileExt:jpg,png,bmp,jpeg',
+			),
+			'change_psd' => array(
+				'user_name' => ['require', 'max' => 20],
+				'user_old_psd' => ['require', 'length' => 32],
+				'user_psd' => ['require', 'length' => 32],
+			),
 		),
 		'Code' => array(
 			'get_code' => array(
@@ -44,7 +54,9 @@ class Common extends Controller {
 		$this->request = Request::instance();
 		// $this->check_time($this->request->only(['time']));
 		// $this->check_token($this->request->param());
-		$this->params = $this->check_params($this->request->except(['time', 'token']));
+		//$this->params = $this->check_params($this->request->except(['time', 'token']));
+		// files
+		$this->params = $this->check_params($this->request->param(true));
 	}
 	// 返回信息
 	public function return_msg($code, $msg = '', $data = []) {
@@ -169,5 +181,30 @@ class Common extends Controller {
 			$this->return_msg(400, '验证码不正确');
 		}
 		session($username . '_code', null);
+	}
+	// 上传图片
+	public function upload_file($file, $type = '') {
+		$base_path = substr(ROOT_PATH, 0, strlen(ROOT_PATH) - 4);
+		$info = $file->move($base_path . 'public' . DS . 'uploads');
+		if ($info) {
+			$path = '/uploads/' . $info->getSaveName();
+			dump($path);
+			// 裁剪图片
+			if (!empty($type)) {
+				$this->image_edit($path, $type);
+			}
+			return str_replace('\\', '/', $path);
+		} else {
+			$this->return_msg(400, $file->getError());
+		}
+	}
+	public function image_edit($path, $type) {
+		$base_path = substr(ROOT_PATH, 0, strlen(ROOT_PATH) - 4);
+		$image = Image::open($base_path . 'public' . $path);
+		switch ($type) {
+		case 'head_img':
+			$image->thumb(200, 200, Image::THUMB_CENTER)->save($base_path . 'public' . $path);
+			break;
+		}
 	}
 }

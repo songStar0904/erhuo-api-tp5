@@ -39,4 +39,29 @@ class User extends Common {
 			$this->return_msg(200, '用户注册成功', $res);
 		}
 	}
+	public function upload() {
+		$data = $this->params;
+		$img_path = $this->upload_file($data['user_icon'], 'head_img');
+		$res = db('user')->where('user_id', $data['user_id'])
+			->setField('user_icon', $img_path);
+		if ($res) {
+			$this->return_msg(200, '头像上传成功', $img_path);
+		} else {
+			$this->return_msg(400, '头像上传失败');
+		}
+	}
+	public function change_psd() {
+		$data = $this->params;
+		$user_name_type = $this->check_username($data['user_name']);
+		$this->check_exist($data['user_name'], $user_name_type, 1);
+		$db_old_psd = db('user')->where('user_' . $user_name_type, $data['user_name'])->value('user_psd');
+		if ($db_old_psd !== $data['user_old_psd']) {
+			$this->return_msg(400, '原密码错误');
+		}
+		$res = db('user')->where('user_' . $user_name_type, $data['user_name'])->setField('user_psd', $data['user_psd']);
+		if ($res !== false) {
+			$this->return_msg(200, '修改成功');
+		}
+
+	}
 }

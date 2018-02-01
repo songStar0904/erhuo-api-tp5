@@ -21,7 +21,7 @@ class Code extends Common {
 		$this->check_exist($username, $type, $exist);
 		// 检测请求频率 60s
 		if (session('?' . $username . '_last_send_time')) {
-			if (time() - session($username . '_last_send_time') < 60) {
+			if (time() - session($username . '_last_send_time') < 0) {
 				$this->return_msg(400, $type_name . '验证码，每60秒只能发送一次');
 			}
 		}
@@ -46,7 +46,7 @@ class Code extends Common {
 		return rand($min, $max);
 	}
 	public function send_code_to_phone($phone, $code) {
-		set_time_limit(60);
+		set_time_limit(0);
 		header('Content-Type: text/plain; charset=utf-8');
 		$response = Sms::sendSms($phone, $code);
 		if ($response->Code !== 'OK') {
