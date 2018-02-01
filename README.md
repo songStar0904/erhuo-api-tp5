@@ -44,7 +44,7 @@
 |user_name|string|必需|无|手机号或邮箱|
 |user_psd|string|必需|无|md5加密用户密码|
 
-```json
+```javascript
 {
     "code": 200,
     "msg": "登录成功!",
