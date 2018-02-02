@@ -101,16 +101,16 @@ class User extends Common {
 			$data['page'] = 1;
 		}
 		if (!isset($data['num'])) {
-			$data['num'] = 1;
+			$data['num'] = 5;
 		}
 		if (isset($data['search'])) {
 			$res = db('user')->where('user_name|user_phone|user_email', 'like', '%' . $data['search'] . '%')
-				->limit(($data['page'] - 1) * $data['num'], $data['num'])
+				->page($data['page'], $data['num'])
 				->select();
 		} else {
 			dump(($data['page'] - 1) * $data['num'], $data['num']);
 			$res = db('user')
-				->limit(($data['page'] - 1) * $data['num'], $data['num'])
+				->page($data['page'], $data['num'])
 				->select();
 		}
 		if ($res == false) {
@@ -150,10 +150,18 @@ class User extends Common {
 		} else {
 			$join_type = 'fans';
 		}
-
+		if (!isset($data['page'])) {
+			$data['page'] = 1;
+		}
+		if (!isset($data['num'])) {
+			$data['num'] = 5;
+		}
 		$join = [['erhuo_user u', 'u.user_id = s.' . $join_type . '_id']];
 		$res = db('userrship')->alias('s')->field($field)
-			->join($join)->where($data['type'] . '_id', $data['user_id'])->select();
+			->join($join)
+			->where($data['type'] . '_id', $data['user_id'])
+			->page($data['page'], $data['num'])
+			->select();
 		if (!$res) {
 			$this->return_msg(400, '查找失败');
 		} else {

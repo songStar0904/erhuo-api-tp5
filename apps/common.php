@@ -85,7 +85,28 @@ class Common extends Controller {
 				'goods_nprice' => 'require|number',
 				'goods_detail' => 'require',
 				'goods_summary' => 'require|max:80',
-				'goods_img' => 'require')));
+				'goods_img' => 'require'),
+			'get' => array(
+				'search' => 'chsDash',
+				'sort' => 'chsDash',
+				'user_id' => 'number',
+				'page' => 'number',
+				'num' => 'number'),
+			'get_one' => array(
+				'goods_id' => 'require|number',
+			),
+			'edit' => array(
+				'goods_id' => 'require|number',
+				'goods_name' => ['require', 'max' => 20],
+				'goods_cid' => 'require|number',
+				'goods_oprice' => 'require|number',
+				'goods_nprice' => 'require|number',
+				'goods_detail' => 'require',
+				'goods_summary' => 'require|max:80',
+				'goods_img' => 'require',
+			),
+			'delete' => array(
+				'goods_id' => 'require|number')));
 	protected function _initialize() {
 		parent::_initialize();
 		$this->request = Request::instance();

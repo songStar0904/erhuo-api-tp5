@@ -38,3 +38,11 @@ Route::post('user/follower', 'user/follower');
 Route::get('user/get_follower', 'user/get_follower');
 // 添加商品
 Route::post('goods/add', 'goods/add');
+// 获得商品
+Route::get('goods/get', 'goods/get');
+// 获得单个商品
+Route::get('goods/get_one', 'goods/get_one');
+// 修改商品
+Route::post('goods/edit', 'goods/edit');
+// 删除商品
+Route::delete('goods/delete', 'goods/delete');
