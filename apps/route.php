@@ -33,7 +33,7 @@ Route::get('user/get', 'user/get');
 // 获取单个用户信息
 Route::get('user/get_one', 'user/get_one');
 // 关注与取关
-Route::post('user/follower', 'user/follower');
+Route::post('user/follow', 'user/follow');
 // 获得粉丝关注
 Route::get('user/get_follower', 'user/get_follower');
 // 添加商品
@@ -46,3 +46,5 @@ Route::get('goods/get_one', 'goods/get_one');
 Route::post('goods/edit', 'goods/edit');
 // 删除商品
 Route::delete('goods/delete', 'goods/delete');
+// 关注与取关
+Route::post('goods/follow', 'goods/follow');

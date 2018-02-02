@@ -25,12 +25,19 @@ class Goods extends Common {
 	}
 	public function get_one() {
 		$data = $this->params;
+		// 浏览数+1
+		$view = db('goods')->where('goods_id', $data['goods_id'])->setInc('goods_view');
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
 		$res = db('goods')->alias('g')->join($join)->where('goods_id', $data['goods_id'])->select();
 		if ($res) {
 			$res = $res[0];
 			$res['goods_detail'] = htmlspecialchars_decode($res['goods_detail']);
 			// 这里还要整理数据
+			// 记录浏览记录
+			$uid = session('user_id');
+			if ($uid) {
+				$this->record($uid, $data['goods_id']);
+			}
 			$this->return_msg(200, '查询商品成功', $res);
 		} else {
 			$this->return_msg(400, '查询商品失败', $res);
@@ -55,5 +62,9 @@ class Goods extends Common {
 		} else {
 			$this->return_msg(400, '删除商品失败', $res);
 		}
+	}
+	public function follow() {
+		$data = $this->params;
+		$this->common_follow($data['user_id'], $data['goods_id'], 'goods');
 	}
 }

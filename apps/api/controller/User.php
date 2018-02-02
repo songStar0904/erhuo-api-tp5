@@ -18,6 +18,7 @@ class User extends Common {
 			$db_res['user_ltime'] = $update['user_ltime'];
 			$db_res['user_ip'] = $update['user_ip'];
 			unset($db_res['user_psd']);
+			session('user_id', $db_res['user_id']);
 			$this->return_msg(200, '登录成功', $db_res);
 		}
 	}
@@ -137,9 +138,9 @@ class User extends Common {
 		}
 	}
 	// 关注与取关
-	public function follower() {
+	public function follow() {
 		$data = $this->params;
-		$this->common_follower($data['user_id'], $data['followers_id'], 'user');
+		$this->common_follow($data['user_id'], $data['followers_id'], 'user');
 	}
 	// 获得 粉丝关注
 	public function get_follower() {

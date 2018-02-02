@@ -62,7 +62,7 @@ class Common extends Controller {
 			'get_one' => array(
 				'user_id' => 'number',
 			),
-			'follower' => array(
+			'follow' => array(
 				'user_id' => 'require|number',
 				'followers_id' => 'require|number',
 			),
@@ -106,7 +106,11 @@ class Common extends Controller {
 				'goods_img' => 'require',
 			),
 			'delete' => array(
-				'goods_id' => 'require|number')));
+				'goods_id' => 'require|number'),
+			'follow' => array(
+				'user_id' => 'require|number',
+				'goods_id' => 'require|number',
+			)));
 	protected function _initialize() {
 		parent::_initialize();
 		$this->request = Request::instance();
@@ -281,7 +285,7 @@ class Common extends Controller {
 		}
 	}
 	// 用户关注用户和商品
-	public function common_follower($fans_id, $followers_id, $type) {
+	public function common_follow($fans_id, $followers_id, $type) {
 		$has = db($type . 'rship')->where('fans_id', $fans_id)
 			->where('followers_id', $followers_id)
 			->find();
@@ -301,6 +305,20 @@ class Common extends Controller {
 			$this->return_msg(200, $msg . '成功');
 		} else {
 			$this->return_msg(400, $msg . '失败');
+		}
+	}
+	// 记录浏览用户
+	public function record($id, $gid) {
+		$data = array(
+			'grecord_uid' => $id,
+			'grecord_gid' => $gid);
+		// 先检测数据库是否存在 存在则仅更新时间
+		$res = db('grecord')->where($data)->find();
+		if ($res) {
+			$result = db('grecord')->where($data)->setField('grecord_time', time());
+		} else {
+			$data['grecord_time'] = time();
+			$result = db('grecord')->insert($data);
 		}
 	}
 }
