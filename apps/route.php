@@ -28,3 +28,13 @@ Route::post('user/change_psd', 'user/change_psd');
 Route::post('user/find_psd', 'user/find_psd');
 // 绑定手机或邮箱
 Route::post('user/bind_username', 'user/bind_username');
+// 获取用户信息
+Route::get('user/get', 'user/get');
+// 获取单个用户信息
+Route::get('user/get_one', 'user/get_one');
+// 关注与取关
+Route::post('user/follower', 'user/follower');
+// 获得粉丝关注
+Route::get('user/get_follower', 'user/get_follower');
+// 添加商品
+Route::post('goods/add', 'goods/add');

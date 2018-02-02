@@ -31,6 +31,8 @@ class Common extends Controller {
 			'register' => array(
 				'user_name' => ['require', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],
+				'user_sid' => 'require|number',
+				'user_sex' => 'require',
 				'code' => 'require|number|length:6',
 			),
 			'upload' => array(
@@ -52,13 +54,38 @@ class Common extends Controller {
 				'user_name' => ['require', 'max' => 20],
 				'code' => 'require|number|length:6',
 			),
+			'get' => array(
+				'search' => 'chsDash',
+				'page' => 'number',
+				'num' => 'number',
+			),
+			'get_one' => array(
+				'user_id' => 'number',
+			),
+			'follower' => array(
+				'user_id' => 'require|number',
+				'followers_id' => 'require|number',
+			),
+			'get_follower' => array(
+				'user_id' => 'require|number',
+				'type' => 'require|check_name:fans,followers'),
 		),
 		'Code' => array(
 			'get_code' => array(
 				'username' => 'require',
 				'is_exist' => 'require|number|length:1',
 			),
-		));
+		),
+		'Goods' => array(
+			'add' => array(
+				'goods_uid' => 'require|number',
+				'goods_name' => ['require', 'max' => 20],
+				'goods_cid' => 'require|number',
+				'goods_oprice' => 'require|number',
+				'goods_nprice' => 'require|number',
+				'goods_detail' => 'require',
+				'goods_summary' => 'require|max:80',
+				'goods_img' => 'require')));
 	protected function _initialize() {
 		parent::_initialize();
 		$this->request = Request::instance();
@@ -216,6 +243,43 @@ class Common extends Controller {
 		case 'head_img':
 			$image->thumb(200, 200, Image::THUMB_CENTER)->save($base_path . 'public' . $path);
 			break;
+		}
+	}
+	// 更新登录时间和ip
+	public function update_login($user_id) {
+		$now = time();
+		$ip = $this->request->ip();
+		$res = db('user')->where('user_id', $user_id)->update(['user_ltime' => $now, 'user_ip' => $ip]);
+		if (!$res) {
+			$this->return_msg(400, '更新登录时间/ip失败');
+		} else {
+			return array(
+				'user_ltime' => $now,
+				'user_ip' => $ip,
+			);
+		}
+	}
+	// 用户关注用户和商品
+	public function common_follower($fans_id, $followers_id, $type) {
+		$has = db($type . 'rship')->where('fans_id', $fans_id)
+			->where('followers_id', $followers_id)
+			->find();
+		if ($has) {
+			$msg = '取关';
+			$res = db($type . 'rship')->where('fans_id', $fans_id)
+				->where('followers_id', $followers_id)
+				->delete();
+		} else {
+			$msg = '关注';
+			$data['fans_id'] = $fans_id;
+			$data['followers_id'] = $followers_id;
+			$data['follower_time'] = time();
+			$res = db($type . 'rship')->insert($data);
+		}
+		if ($res) {
+			$this->return_msg(200, $msg . '成功');
+		} else {
+			$this->return_msg(400, $msg . '失败');
 		}
 	}
 }
