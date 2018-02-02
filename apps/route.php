@@ -20,6 +20,8 @@ Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');
 Route::post('user/register', 'user/register');
 // 用户登录
 Route::post('user/login', 'user/login');
+// 用户退出登录
+Route::get('user/login_out', 'user/login_out');
 // 上传图片
 Route::post('user/upload', 'user/upload');
 // 修改密码

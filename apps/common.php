@@ -28,6 +28,7 @@ class Common extends Controller {
 				'user_name' => ['require', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],
 			),
+			'login_out' => array(),
 			'register' => array(
 				'user_name' => ['require', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],

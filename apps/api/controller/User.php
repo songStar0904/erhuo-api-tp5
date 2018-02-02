@@ -22,6 +22,14 @@ class User extends Common {
 			$this->return_msg(200, '登录成功', $db_res);
 		}
 	}
+	public function login_out() {
+		session('user_id', null);
+		if (session('user_id')) {
+			$this->return_msg(400, '退出登录失败');
+		} else {
+			$this->return_msg(200, '退出登录成功');
+		}
+	}
 	public function register() {
 		$data = $this->params;
 		$this->check_code($data['user_name'], $data['code']);
