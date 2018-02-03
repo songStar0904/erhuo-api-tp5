@@ -111,7 +111,10 @@ class Common extends Controller {
 			'follow' => array(
 				'user_id' => 'require|number',
 				'goods_id' => 'require|number',
-			)));
+			),
+		),
+		'Main' => array(
+			'get' => array()));
 	protected function _initialize() {
 		parent::_initialize();
 		$this->request = Request::instance();

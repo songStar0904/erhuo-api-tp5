@@ -50,3 +50,5 @@ Route::post('goods/edit', 'goods/edit');
 Route::delete('goods/delete', 'goods/delete');
 // 关注与取关
 Route::post('goods/follow', 'goods/follow');
+// 统计
+Route::get('main/get', 'main/get');

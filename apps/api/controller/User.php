@@ -117,7 +117,6 @@ class User extends Common {
 				->page($data['page'], $data['num'])
 				->select();
 		} else {
-			dump(($data['page'] - 1) * $data['num'], $data['num']);
 			$res = db('user')
 				->page($data['page'], $data['num'])
 				->select();
@@ -171,7 +170,7 @@ class User extends Common {
 			->where($data['type'] . '_id', $data['user_id'])
 			->page($data['page'], $data['num'])
 			->select();
-		if (!$res) {
+		if (!is_array($res)) {
 			$this->return_msg(400, '查找失败');
 		} else {
 			$this->return_msg(200, '查找成功', $res);
