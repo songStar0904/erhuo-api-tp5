@@ -142,7 +142,7 @@
     ]
 }
 ```
-## 5.获取单个用户信息
+## 6.获取单个用户信息
 >get api.erhuo.com/user/get_one?user_id=1
 
 |参数|类型|必需/可选|默认|描述|
@@ -167,8 +167,78 @@
         "user_icon": "/uploads/20180131/0e1d10906703c56b69d4e800e47d2da0.png",
         "user_ip": "127.0.0.1",
         "user_rship": {
-            "fans_num": 1,
-            "followers_num": 1
+            "fans_num": 1, // 粉丝数
+            "followers_num": 1 // 关注数
+        }
+    }
+}
+```
+## 7.取关和关注
+>post api.erhuo.com/user/follow
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|user_id|number|必需|无|用户id|
+|followers_id|number|必需|无|关注用户id|
+
+```javascript
+{
+    "code": 200,
+    "msg": "关注成功",
+    "data": []
+}
+{
+    "code": 200,
+    "msg": "取关成功",
+    "data": []
+}
+```
+## 8.获得粉丝和关注
+>get api.erhuo.com/user/get_follower?user_id=2&type=fans
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|user_id|number|必需|无|用户id|
+|type|string|必需|无|查询方法 只能为fans和followers|
+
+```javascript
+{
+    "code": 200,
+    "msg": "查找成功",
+    "data": [
+        {
+            "user_id": 1,
+            "user_name": "songstar",
+            "user_sid": 0,
+            "user_sex": "",
+            "user_icon": "/uploads/20180131/0e1d10906703c56b69d4e800e47d2da0.png"
+        }
+    ]
+}
+```
+## 8.统计
+>get api.erhuo.com/main/get
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+```javascript
+{
+    "code": 200,
+    "msg": "统计成功",
+    "data": {
+        "main_gnum": 3, // 商品数量
+        "main_unum": 2, // 用户数量
+        "main_egnum": 3, // 待审核商品数量
+        "new": { // 新增数量
+            "main_gnum": 0, 
+            "main_unum": 0,
+            "main_egnum": 0
         }
     }
 }
