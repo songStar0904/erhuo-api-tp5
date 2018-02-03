@@ -243,3 +243,24 @@
     }
 }
 ```
+## 9.修改个人信息
+>post api.erhuo.com/user/edit
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|user_id|number|必需|无|用户id|
+|user_name|string|可选|无|用户昵称|
+|user_sign|string|可选|无|用户个性签名|
+
+```javascript
+{
+    "code": 200,
+    "msg": "修改个人信息成功",
+    "data": {
+        "user_id": "2",
+        "user_name": "2",
+        "user_sign": "我的联系方式15574406229"
+    }
+}
+```
