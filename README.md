@@ -264,3 +264,48 @@
     }
 }
 ```
+## 10.反馈信息
+>post api.erhuo.com/user/send_fmsg
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|fmsg_uid|number|必需|无|用户id|
+|fmsg_content|string|必需|无|反馈内容|
+
+```javascript
+{
+    "code": 200,
+    "msg": "意见反馈成功",
+    "data": {
+        "lmsg_uid": "1",
+        "lmsg_content": "我要留言",
+        "lmsg_time": 1517639041
+    }
+}
+```
+## 11.留言
+>post api.erhuo.com/user/send_lmsg
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|lmsg_sid|number|必需|无|发送者id|
+|lmsg_rid|number|必需|无|接受者id|
+|lmsg_gid|number|必需|无|商品id|
+|lmsg_id|number|可选|无|留言id|
+|lmsg_content|string|必需|无|反馈内容|
+
+```javascript
+{
+    "code": 200,
+    "msg": "留言成功",
+    "data": {
+        "lmsg_sid": "1",
+        "lmsg_rid": "2",
+        "lmsg_content": "我要留言",
+        "lmsg_gid": "1",
+        "lmsg_time": 1517639041
+    }
+}
+```
