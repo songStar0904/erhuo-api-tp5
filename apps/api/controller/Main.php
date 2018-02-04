@@ -6,13 +6,16 @@ class Main extends Common {
 		$gnum = db('goods')->count();
 		$unum = db('user')->count();
 		$egnum = db('goods')->where('goods_status', 0)->count();
+		$fnum = db('fmsg')->count();
 		$main = db('main')->where('main_id', 0)->find();
 		$data['main_gnum'] = $gnum;
 		$data['main_unum'] = $unum;
 		$data['main_egnum'] = $egnum;
+		$data['main_fnum'] = $fnum;
 		$data['new']['main_gnum'] = $gnum - $main['main_gnum'];
 		$data['new']['main_unum'] = $unum - $main['main_unum'];
 		$data['new']['main_egnum'] = $egnum - $main['main_egnum'];
+		$data['new']['main_fnum'] = $fnum - $main['main_fnum'];
 		$res = db('main')->where('main_id', 0)->update($data);
 		if ($res >= 0) {
 			$this->return_msg(200, '统计成功', $data);

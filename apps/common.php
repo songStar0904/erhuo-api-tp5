@@ -55,6 +55,19 @@ class Common extends Controller {
 				'user_name' => ['require', 'max' => 20],
 				'code' => 'require|number|length:6',
 			),
+			'edit' => array(
+				'user_id' => 'require|number',
+				'user_name' => 'max:20',
+				'user_sign' => 'max:255'),
+			'send_fmsg' => array(
+				'fmsg_uid' => 'require|number',
+				'fmsg_content' => 'require|max:255'),
+			'send_lmsg' => array(
+				'lmsg_id' => 'number',
+				'lmsg_rid' => 'require|number',
+				'lmsg_sid' => 'require|number',
+				'lmsg_gid' => 'require|number',
+				'lmsg_content' => 'require|max:255'),
 			'get' => array(
 				'search' => 'chsDash',
 				'page' => 'number',
@@ -324,5 +337,12 @@ class Common extends Controller {
 			$data['grecord_time'] = time();
 			$result = db('grecord')->insert($data);
 		}
+	}
+	// 获得留言
+	public function get_lmsg($id, $type) {
+		$join = [['erhuo_user s', 's.user_id = l.lmsg_sid'], ['erhuo_user r', 'r.user_id = l.lmsg_rid']];
+		$field = 'lmsg_id, lmsg_content,r.user_icon as ruser_icon,r.user_name as ruser_name,s.user_name as suser_name, s.user_icon as suser_icon, lmsg_content, lmsg_status';
+		$res = db('lmsg')->alias('l')->join($join)->field($field)->where('lmsg_gid', $id)->order('lmsg_time desc')->select();
+		return $res;
 	}
 }

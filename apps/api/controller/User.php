@@ -104,6 +104,40 @@ class User extends Common {
 			$this->return_msg(400, $name_type . '绑定失败');
 		}
 	}
+	public function edit() {
+		$data = $this->params;
+		$res = db('user')->where('user_id', $data['user_id'])
+			->setField($data);
+		if ($res < 0) {
+			$this->return_msg(400, '修改个人信息失败');
+		} else {
+			$this->return_msg(200, '修改个人信息成功', $data);
+		}
+	}
+	public function send_fmsg() {
+		$data = $this->params;
+		$data['fmsg_time'] = time();
+		$res = db('fmsg')->insert($data);
+		if (!$res) {
+			$this->return_msg(400, '意见反馈失败');
+		} else {
+			$this->return_msg(200, '意见反馈成功', $data);
+		}
+	}
+	public function send_lmsg() {
+		$data = $this->params;
+		if (isset($data['lmsg_id'])) {
+			$update_status = db('lmsg')->where('lmsg_id', $data['lmsg_id'])->setField('lmsg_status', 1);
+			unset($data['lmsg_id']);
+		}
+		$data['lmsg_time'] = time();
+		$res = db('lmsg')->insert($data);
+		if (!$res) {
+			$this->return_msg(400, '留言失败');
+		} else {
+			$this->return_msg(200, '留言成功', $data);
+		}
+	}
 	public function get() {
 		$data = $this->params;
 		if (!isset($data['page'])) {

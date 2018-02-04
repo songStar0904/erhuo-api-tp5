@@ -33,6 +33,7 @@ class Goods extends Common {
 			$res = $res[0];
 			$res['goods_detail'] = htmlspecialchars_decode($res['goods_detail']);
 			// 这里还要整理数据
+			$res['goods_lmsg'] = $this->get_lmsg($data['goods_id'], 'goods');
 			// 记录浏览记录
 			$uid = session('user_id');
 			if ($uid) {
