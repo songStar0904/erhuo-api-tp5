@@ -341,8 +341,23 @@ class Common extends Controller {
 	// 获得留言
 	public function get_lmsg($id, $type) {
 		$join = [['erhuo_user s', 's.user_id = l.lmsg_sid'], ['erhuo_user r', 'r.user_id = l.lmsg_rid']];
-		$field = 'lmsg_id, lmsg_content,r.user_icon as ruser_icon,r.user_name as ruser_name,s.user_name as suser_name, s.user_icon as suser_icon, lmsg_content, lmsg_status';
+		$field = 'lmsg_id, lmsg_content,r.user_id as ruser_id,r.user_icon as ruser_icon,r.user_name as ruser_name,s.user_id as suser_id, s.user_name as suser_name, s.user_icon as suser_icon, lmsg_content, lmsg_status';
 		$res = db('lmsg')->alias('l')->join($join)->field($field)->where('lmsg_gid', $id)->order('lmsg_time desc')->select();
+		$res = $this->arrange_data($res, 'ruser');
+		$res = $this->arrange_data($res, 'suser');
 		return $res;
+	}
+	// 整理数据
+	public function arrange_data($data, $name){
+		$len = strlen($name);
+		foreach ($data as $k => $val) {
+		foreach ($val as $key => $value) {
+			if(substr($key, 0, $len) == $name){
+				$data[$k][$name][$key] = $value;
+				unset($data[$k][$key]);
+			}
+		}
+	}
+		return $data;
 	}
 }
