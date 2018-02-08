@@ -130,11 +130,13 @@ class Common extends Controller {
 			'get' => array()));
 	protected function _initialize() {
 		parent::_initialize();
-		$this->request = Request::instance();
+
 		// $this->check_time($this->request->only(['time']));
 		// $this->check_token($this->request->param());
 		//$this->params = $this->check_params($this->request->except(['time', 'token']));
 		// files
+		$this->request = Request::instance();
+		dump($_FILES["user_icon"]);
 		$this->params = $this->check_params($this->request->param(true));
 	}
 	// 返回信息
@@ -348,16 +350,23 @@ class Common extends Controller {
 		return $res;
 	}
 	// 整理数据
-	public function arrange_data($data, $name){
+	public function arrange_data($data, $name) {
 		$len = strlen($name);
 		foreach ($data as $k => $val) {
-		foreach ($val as $key => $value) {
-			if(substr($key, 0, $len) == $name){
-				$data[$k][$name][$key] = $value;
-				unset($data[$k][$key]);
+			if (is_array($val)) {
+				foreach ($val as $key => $value) {
+					if (substr($key, 0, $len) == $name) {
+						$data[$k][$name][$key] = $value;
+						unset($data[$k][$key]);
+					}
+				}
+			} else {
+				if (substr($k, 0, $len) == $name) {
+					$data[$name][$k] = $value;
+					unset($data[$k]);
+				}
 			}
 		}
-	}
 		return $data;
 	}
 }

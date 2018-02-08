@@ -52,6 +52,7 @@ class User extends Common {
 	}
 	public function upload() {
 		$data = $this->params;
+		dump($data['user_icon']);
 		$img_path = $this->upload_file($data['user_icon'], 'head_img');
 		$res = db('user')->where('user_id', $data['user_id'])
 			->setField('user_icon', $img_path);

@@ -28,11 +28,14 @@ class Goods extends Common {
 		// 浏览数+1
 		$view = db('goods')->where('goods_id', $data['goods_id'])->setInc('goods_view');
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$res = db('goods')->alias('g')->join($join)->where('goods_id', $data['goods_id'])->select();
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_detail, goods_summary, goods_img, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
+		$res = db('goods')->alias('g')->join($join)->field($field)->where('goods_id', $data['goods_id'])->select();
 		if ($res) {
 			$res = $res[0];
 			$res['goods_detail'] = htmlspecialchars_decode($res['goods_detail']);
 			// 这里还要整理数据
+			$res = $this->arrange_data($res, 'user');
+			$res = $this->arrange_data($res, 'gclassify');
 			$res['goods_lmsg'] = $this->get_lmsg($data['goods_id'], 'goods');
 			// 记录浏览记录
 			$uid = session('user_id');
