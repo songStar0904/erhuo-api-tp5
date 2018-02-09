@@ -127,16 +127,25 @@ class Common extends Controller {
 			),
 		),
 		'Main' => array(
-			'get' => array()));
+			'get' => array()),
+		'Admin' => array(
+			'get_fmsg' => array(
+				'fmsg_status' => 'number',
+				'fmsg_uid' => 'number'),
+			'edit_fmsg' => array(
+				'fmsg_status' => 'require|number',
+				'fmsg_id' => 'require|number')));
 	protected function _initialize() {
 		parent::_initialize();
-
+		header('Access-Control-Allow-Origin: *');
+		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+		header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 		// $this->check_time($this->request->only(['time']));
 		// $this->check_token($this->request->param());
 		//$this->params = $this->check_params($this->request->except(['time', 'token']));
 		// files
 		$this->request = Request::instance();
-		dump($_FILES["user_icon"]);
+		// dump($_FILES["user_icon"]);
 		$this->params = $this->check_params($this->request->param(true));
 	}
 	// 返回信息
@@ -180,6 +189,14 @@ class Common extends Controller {
 		}
 		// 通过验证
 		return $arr;
+	}
+	// 检验 是否管理员
+	public function check_admin() {
+		if (session('user_access') > 0) {
+			return session('user_access');
+		} else {
+			$this->return_msg(400, '抱歉，您的权限不够', session('user_access'));
+		}
 	}
 	// 判断手机还是邮箱
 	public function check_username($username) {
@@ -369,4 +386,5 @@ class Common extends Controller {
 		}
 		return $data;
 	}
+
 }

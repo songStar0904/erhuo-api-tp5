@@ -19,11 +19,13 @@ class User extends Common {
 			$db_res['user_ip'] = $update['user_ip'];
 			unset($db_res['user_psd']);
 			session('user_id', $db_res['user_id']);
+			session('user_access', $db_res['user_access']);
 			$this->return_msg(200, '登录成功', $db_res);
 		}
 	}
 	public function login_out() {
 		session('user_id', null);
+		session('user_access', null);
 		if (session('user_id')) {
 			$this->return_msg(400, '退出登录失败');
 		} else {

@@ -13,7 +13,7 @@ use think\Route;
 
 Route::domain('api', 'api');
 
-Route::post('user', 'user/login');
+Route::get('user', 'user/login');
 // 获取验证码
 Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');
 // 用户注册
@@ -58,3 +58,7 @@ Route::delete('goods/delete', 'goods/delete');
 Route::post('goods/follow', 'goods/follow');
 // 统计
 Route::get('main/get', 'main/get');
+// 获得反馈
+Route::get('admin/get_fmsg', 'admin/get_fmsg');
+// 修改反馈状态
+Route::post('admin/edit_fmsg', 'admin/edit_fmsg');
