@@ -312,3 +312,53 @@
     }
 }
 ```
+## 11.获得反馈信息
+>post api.erhuo.com/admin/get_fmsg?fmsg_status=0
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|fmsg_sid|number|必需|无|反馈信息id|
+|fmsg_status|number|可选|无|修改状态|
+|fmsg_uid|number|可选|无|发送者|
+
+```javascript
+{
+    "code": 200,
+    "msg": "获取反馈信息成功",
+    "data": {
+        "0": {
+            "fmsg_id": 4,
+            "fmsg_content": "我要反馈",
+            "fmsg_status": 0,
+            "fmsg_time": 1517638511,
+            "user": {
+                "user_id": 1,
+                "user_name": "songstar",
+                "user_icon": "/uploads/20180131/0e1d10906703c56b69d4e800e47d2da0.png"
+            }
+        },
+        "length": 1
+    }
+}
+```
+
+## 12.修改反馈信息
+>post api.erhuo.com/admin/edit_fmsg
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|fmsg_sid|number|必需|无|反馈信息id|
+|fmsg_status|number|必需|无|修改状态|
+
+```javascript
+{
+    "code": 200,
+    "msg": "修改反馈信息成功",
+    "data": 1
+}
+```
+
