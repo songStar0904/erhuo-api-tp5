@@ -426,3 +426,24 @@
 }
 ```
 
+## 15.删除分类
+>delete api.erhuo.com/classify/delete
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|type|string|必需|无|分类数据库名称（商品分类，文章分类）|
+|id|number|必需|无|分类id|
+
+```javascript
+{
+    "code": 200,
+    "msg": "删除分类成功",
+    "data": {
+        "type": "gclassify",
+        "id": "3"
+    }
+}
+```
+
