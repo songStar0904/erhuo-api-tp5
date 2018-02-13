@@ -363,7 +363,7 @@
 ```
 
 ## 13.查询分类
->post api.erhuo.com/classify/get?type=gclassify
+>get api.erhuo.com/classify/get?type=gclassify
 
 |参数|类型|必需/可选|默认|描述|
 |-|-|-|-|-|
@@ -381,6 +381,48 @@
             "gclassify_name": "书籍"
         }
     ]
+}
+```
+
+## 14.添加分类
+>post api.erhuo.com/classify/add
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|type|string|必需|无|分类数据库名称（商品分类，文章分类）|
+|name|string|必需|无|分类名称|
+
+```javascript
+{
+    "code": 200,
+    "msg": "添加分类成功",
+    "data": {
+        "gclassify_name": "玩具"
+    }
+}
+```
+
+## 15.修改分类
+>post api.erhuo.com/classify/edit
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|type|string|必需|无|分类数据库名称（商品分类，文章分类）|
+|name|string|必需|无|分类名称|
+|id|number|必需|无|分类id|
+
+```javascript
+{
+    "code": 200,
+    "msg": "修改分类成功",
+    "data": {
+        "gclassify_id": "1",
+        "gclassify_name": "电器"
+    }
 }
 ```
 
