@@ -134,33 +134,52 @@ class Common extends Controller {
 				'fmsg_uid' => 'number'),
 			'edit_fmsg' => array(
 				'fmsg_status' => 'require|number',
-				'fmsg_id' => 'require|number')));
+				'fmsg_id' => 'require|number')),
+		'Classify' => array(
+			'get' => array(
+				'type' => 'require'),
+			'add' => array(
+				'type' => 'require',
+				'name' => 'require|chs|max:6'),
+			'edit' => array(
+				'type' => 'require',
+				'id' => 'require|number',
+				'name' => 'require|chs|max:6'),
+			'delete' => array(
+				'type' => 'require',
+				'id' => 'require|number')));
 	protected function _initialize() {
 		parent::_initialize();
-		header('Access-Control-Allow-Origin: *');
-		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
-		header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
-		// $this->check_time($this->request->only(['time']));
-		// $this->check_token($this->request->param());
+		header("Access-Control-Allow-Origin: http://localhost:8080");
+		header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
+		header("Access-Control-Allow-Credentials: true");
+		header("Access-Control-Allow-Headers: Content-Type, X-Requested-With, Cache-Control,Authorization");
+		//dump($this->request->param(true));
+		//$this->check_time($this->request->only(['time']));
+		//$this->check_token($this->request->param());
 		//$this->params = $this->check_params($this->request->except(['time', 'token']));
 		// files
 		$this->request = Request::instance();
 		// dump($_FILES["user_icon"]);
+		// dump($this->request->file('user_icon'));
 		$this->params = $this->check_params($this->request->param(true));
 	}
 	// 返回信息
-	public function return_msg($code, $msg = '', $data = []) {
+	public function return_msg($code, $msg = '', $data = [], $total = false) {
 		$return_data['code'] = $code;
 		$return_data['msg'] = $msg;
 		$return_data['data'] = $data;
+		if ($total) {
+			$return_data['total'] = $total;
+		}
 		echo json_encode($return_data);die;
 	}
 	// 验证时间
 	public function check_time($arr) {
 		if (!isset($arr['time']) || intval($arr['time']) <= 1) {
-			$this->return_msg(400, '时间戳不正确');
+			$this->return_msg(400, '时间戳不正确', $arr);
 		}
-		if (time() - intval(($arr['time']) > 60)) {
+		if ((time() - intval($arr['time'])) > 60) {
 			$this->return_msg(400, '请求超时');
 		}
 	}
@@ -171,13 +190,14 @@ class Common extends Controller {
 		}
 		$app_token = $arr['token']; // api传过来的token
 		unset($arr['token']); // 去除token
+		unset($arr['time']);
 		$service_token = '';
 		foreach ($arr as $key => $value) {
 			$service_token .= md5($value);
 		}
-		$service_token = md5('apo_' . $service_token . '_api');
+		$service_token = md5('api_' . $service_token . '_api');
 		if ($app_token !== $service_token) {
-			$this->return_msg(400, 'token值不正确');
+			$this->return_msg(400, 'token值不正确', $service_token);
 		}
 	}
 	// 过滤参数
@@ -195,7 +215,7 @@ class Common extends Controller {
 		if (session('user_access') > 0) {
 			return session('user_access');
 		} else {
-			$this->return_msg(400, '抱歉，您的权限不够', session('user_access'));
+			$this->return_msg(400, '抱歉，您的权限不够', session('user_id'));
 		}
 	}
 	// 判断手机还是邮箱

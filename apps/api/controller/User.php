@@ -164,7 +164,8 @@ class User extends Common {
 			foreach ($res as $key => $value) {
 				unset($res[$key]['user_psd']);
 			}
-			$this->return_msg(200, '查询用户信息成功', $res);
+			$total = db('user')->count();
+			$this->return_msg(200, '查询用户信息成功', $res, $total);
 		}
 	}
 	public function get_one() {

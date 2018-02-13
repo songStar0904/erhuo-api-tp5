@@ -54,6 +54,16 @@ Route::get('goods/get_one', 'goods/get_one');
 Route::post('goods/edit', 'goods/edit');
 // 删除商品
 Route::delete('goods/delete', 'goods/delete');
+
+// 获取分类
+Route::get('classify/get', 'classify/get');
+// 添加分类
+Route::post('classify/add', 'classify/add');
+// 修改分类
+Route::post('classify/edit', 'classify/edit');
+// 删除分类
+Route::delete('classify/delete', 'classify/delete');
+
 // 关注与取关
 Route::post('goods/follow', 'goods/follow');
 // 统计
