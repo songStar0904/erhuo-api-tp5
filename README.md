@@ -446,4 +446,35 @@
     }
 }
 ```
+## 15.获得热搜
+>get api.erhuo.com/goods/get_hot?num=5
 
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|num|string|必需|无|热搜前num|
+
+```json
+{
+    "code": 200,
+    "msg": "查询热搜成功",
+    "data": [
+        {
+            "search_id": 5,
+            "search_name": "Vue",
+            "search_num": 20
+        },
+        {
+            "search_id": 1,
+            "search_name": "四级",
+            "search_num": 2
+        },
+        {
+            "search_id": 4,
+            "search_name": "jacascript",
+            "search_num": 1
+        }
+    ]
+}
+```
