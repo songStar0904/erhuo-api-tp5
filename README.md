@@ -203,6 +203,8 @@
 |time|int|必需|无|时间戳（用于判断请求是否超时）|
 |token|string|必需|无|确定来着身份|
 |user_id|number|必需|无|用户id|
+|uid|number|必需|无|访问者用户id|
+|page|number|可选|1|页码|
 |type|string|必需|无|查询方法 只能为fans和followers|
 
 ```javascript
@@ -215,9 +217,11 @@
             "user_name": "songstar",
             "user_sid": 0,
             "user_sex": "",
-            "user_icon": "/uploads/20180131/0e1d10906703c56b69d4e800e47d2da0.png"
-        }
-    ]
+            "user_icon": "/uploads/20180131/0e1d10906703c56b69d4e800e47d2da0.png",
+            "is_fans": true // 访问者与用户是否粉丝关系
+        }
+    ],
+    "total": 1
 }
 ```
 ## 8.统计
