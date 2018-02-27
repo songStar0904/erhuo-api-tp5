@@ -482,3 +482,25 @@
     ]
 }
 ```
+## 16.添加商品
+>get api.erhuo.com/goods/add
+
+|参数|类型|必需/可选|默认|描述|
+|-|-|-|-|-|
+|time|int|必需|无|时间戳（用于判断请求是否超时）|
+|token|string|必需|无|确定来着身份|
+|goods_uid|number|必需|无|添加者id|
+|goods_name|number|必需|无|添加者id|
+|goods_cid|number|必需|无|分类id|
+|goods_oprice|number|必需|无|原价|
+|goods_nprice|number|必需|无|现价|
+|goods_summary|number|必需|无|商品介绍|
+|goods_icon|array|必需|无|商品图片|
+```json
+{
+    "code": 200,
+    "msg": "查询热搜成功",
+    "data": ...商品信息
+}
+```
+
