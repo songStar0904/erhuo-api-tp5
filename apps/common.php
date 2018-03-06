@@ -29,6 +29,7 @@ class Common extends Controller {
 				'user_psd' => ['require', 'length' => 32],
 			),
 			'login_out' => array(),
+			'is_login' => array(),
 			'register' => array(
 				'user_name' => ['require', 'max' => 20],
 				'user_psd' => ['require', 'length' => 32],
@@ -74,6 +75,7 @@ class Common extends Controller {
 				'num' => 'number',
 			),
 			'get_one' => array(
+				'uid' => 'number',
 				'user_id' => 'number',
 			),
 			'follow' => array(
@@ -81,6 +83,7 @@ class Common extends Controller {
 				'followers_id' => 'require|number',
 			),
 			'get_follower' => array(
+				'uid' => 'require|number',
 				'user_id' => 'require|number',
 				'type' => 'require|check_name:fans,followers'),
 		),
@@ -93,37 +96,42 @@ class Common extends Controller {
 		'Goods' => array(
 			'add' => array(
 				'goods_uid' => 'require|number',
+				'goods_icon' => 'require|array',
 				'goods_name' => ['require', 'max' => 20],
 				'goods_cid' => 'require|number',
 				'goods_oprice' => 'require|number',
 				'goods_nprice' => 'require|number',
-				'goods_detail' => 'require',
-				'goods_summary' => 'require|max:80',
-				'goods_img' => 'require'),
+				'goods_summary' => 'require|max:255'),
 			'get' => array(
 				'search' => 'chsDash',
 				'sort' => 'chsDash',
-				'user_id' => 'number',
+				'uid' => 'number',
 				'page' => 'number',
 				'num' => 'number'),
 			'get_one' => array(
 				'goods_id' => 'require|number',
 			),
 			'edit' => array(
+				'goods_uid' => 'require|number',
+				'goods_icon' => 'require|array',
 				'goods_id' => 'require|number',
 				'goods_name' => ['require', 'max' => 20],
 				'goods_cid' => 'require|number',
 				'goods_oprice' => 'require|number',
 				'goods_nprice' => 'require|number',
-				'goods_detail' => 'require',
-				'goods_summary' => 'require|max:80',
-				'goods_img' => 'require',
+				'goods_summary' => 'require|max:255',
+			),
+			'upload' => array(
+				'goods_icon' => 'require|image|fileSize:2000000|fileExt:jpg,png,bmp,jpeg',
 			),
 			'delete' => array(
 				'goods_id' => 'require|number'),
 			'follow' => array(
 				'user_id' => 'require|number',
 				'goods_id' => 'require|number',
+			),
+			'get_hot' => array(
+				'num' => 'require|number',
 			),
 		),
 		'Main' => array(
@@ -150,18 +158,16 @@ class Common extends Controller {
 				'id' => 'require|number')));
 	protected function _initialize() {
 		parent::_initialize();
-		header("Access-Control-Allow-Origin: http://localhost:8080");
+		header("Access-Control-Allow-Origin: http://localhost:3000");
 		header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 		header("Access-Control-Allow-Credentials: true");
-		header("Access-Control-Allow-Headers: Content-Type, X-Requested-With, Cache-Control,Authorization");
+		header("Access-Control-Allow-Headers: Content-Type, X-Requested-With, Cache-Control,accept");
 		//dump($this->request->param(true));
 		//$this->check_time($this->request->only(['time']));
 		//$this->check_token($this->request->param());
 		//$this->params = $this->check_params($this->request->except(['time', 'token']));
 		// files
 		$this->request = Request::instance();
-		// dump($_FILES["user_icon"]);
-		// dump($this->request->file('user_icon'));
 		$this->params = $this->check_params($this->request->param(true));
 	}
 	// 返回信息
@@ -202,6 +208,11 @@ class Common extends Controller {
 	}
 	// 过滤参数
 	public function check_params($arr) {
+		foreach ($arr as $key => $value) {
+			if (empty($value) && $this->request->file($key)) {
+				$arr[$key] = $this->request->file($key);
+			}
+		}
 		$rule = $this->rules[$this->request->controller()][$this->request->action()];
 		$this->validate = new Validate($rule);
 		if (!$this->validate->check($arr)) {
@@ -291,11 +302,12 @@ class Common extends Controller {
 	// 检测验证码是否正确
 	public function check_code($username, $code) {
 		$last_time = session($username . '_last_send_time');
+		// dump($_SESSION);
 		if (time() - $last_time > 60 * 5) {
 			$this->return_msg(400, '验证超时， 请在五分钟内验证');
 		}
+
 		$md5_code = md5($username . '_' . md5($code));
-		dump(session($username . '_code'));
 		if (session($username . '_code') !== $md5_code) {
 			$this->return_msg(400, '验证码不正确');
 		}
@@ -306,12 +318,11 @@ class Common extends Controller {
 		$base_path = substr(ROOT_PATH, 0, strlen(ROOT_PATH) - 4);
 		$info = $file->move($base_path . 'public' . DS . 'uploads');
 		if ($info) {
-			$path = '/uploads/' . $info->getSaveName();
-			dump($path);
+			$path = 'http://api.erhuo.com/public/uploads/' . $info->getSaveName();
 			// 裁剪图片
-			if (!empty($type)) {
-				$this->image_edit($path, $type);
-			}
+			// if (!empty($type)) {
+			// 	$this->image_edit($path, $type);
+			// }
 			return str_replace('\\', '/', $path);
 		} else {
 			$this->return_msg(400, $file->getError());
@@ -347,21 +358,30 @@ class Common extends Controller {
 			->find();
 		if ($has) {
 			$msg = '取关';
+			$result = false;
 			$res = db($type . 'rship')->where('fans_id', $fans_id)
 				->where('followers_id', $followers_id)
 				->delete();
 		} else {
 			$msg = '关注';
+			$result = true;
 			$data['fans_id'] = $fans_id;
 			$data['followers_id'] = $followers_id;
 			$data['follower_time'] = time();
 			$res = db($type . 'rship')->insert($data);
 		}
 		if ($res) {
-			$this->return_msg(200, $msg . '成功');
+			$this->return_msg(200, $msg . '成功', $result);
 		} else {
 			$this->return_msg(400, $msg . '失败');
 		}
+	}
+	// 单个用户间是否关注 uid 访问者id
+	public function is_fans($type, $user_id, $uid) {
+		$fans = db($type . 'rship')->where('fans_id', $uid)
+			->where('followers_id', $user_id)->find();
+		$res = $fans ? true : false;
+		return $res;
 	}
 	// 记录浏览用户
 	public function record($id, $gid) {
@@ -386,6 +406,14 @@ class Common extends Controller {
 		$res = $this->arrange_data($res, 'suser');
 		return $res;
 	}
+	// 添加搜索
+	public function add_search($search) {
+		$res = db('search')->where('search_name', $search)->setInc('search_num');
+		if (!$res) {
+			$data['search_name'] = $search;
+			$res2 = db('search')->insert($data);
+		}
+	}
 	// 整理数据
 	public function arrange_data($data, $name) {
 		$len = strlen($name);
@@ -393,13 +421,13 @@ class Common extends Controller {
 			if (is_array($val)) {
 				foreach ($val as $key => $value) {
 					if (substr($key, 0, $len) == $name) {
-						$data[$k][$name][$key] = $value;
+						$data[$k][$name][substr($key, $len + 1)] = $value;
 						unset($data[$k][$key]);
 					}
 				}
 			} else {
 				if (substr($k, 0, $len) == $name) {
-					$data[$name][$k] = $value;
+					$data[$name][substr($k, $len + 1)] = $value;
 					unset($data[$k]);
 				}
 			}

@@ -32,8 +32,16 @@ class User extends Common {
 			$this->return_msg(200, '退出登录成功');
 		}
 	}
+	public function is_login() {
+		if (session('user_id')) {
+			$this->return_msg(200, '已登录', 1);
+		} else {
+			$this->return_msg(200, '登录失效', 0);
+		}
+	}
 	public function register() {
 		$data = $this->params;
+		// dump($_SESSION);
 		$this->check_code($data['user_name'], $data['code']);
 		$user_name_type = $this->check_username($data['user_name']);
 		switch ($user_name_type) {
@@ -45,6 +53,7 @@ class User extends Common {
 			break;
 		}
 		$data['user_rtime'] = time(); // 注册时间
+		$data['user_icon'] = 'http://api.erhuo.com/public/uploads/user_icon/default' . rand(1, 9) . '.png';
 		$res = db('user')->insert($data);
 		if (!$res) {
 			$this->return_msg(400, '用户注册失败');
@@ -54,7 +63,6 @@ class User extends Common {
 	}
 	public function upload() {
 		$data = $this->params;
-		dump($data['user_icon']);
 		$img_path = $this->upload_file($data['user_icon'], 'head_img');
 		$res = db('user')->where('user_id', $data['user_id'])
 			->setField('user_icon', $img_path);
@@ -109,12 +117,17 @@ class User extends Common {
 	}
 	public function edit() {
 		$data = $this->params;
-		$res = db('user')->where('user_id', $data['user_id'])
-			->setField($data);
-		if ($res < 0) {
-			$this->return_msg(400, '修改个人信息失败');
+		$check = db('user')->where('user_name', $data['user_name'])->find();
+		if (!$check) {
+			$res = db('user')->where('user_id', $data['user_id'])
+				->setField($data);
+			if ($res < 0) {
+				$this->return_msg(400, '修改个人信息失败');
+			} else {
+				$this->return_msg(200, '修改个人信息成功', $data);
+			}
 		} else {
-			$this->return_msg(200, '修改个人信息成功', $data);
+			$this->return_msg(400, '用户名已存在');
 		}
 	}
 	public function send_fmsg() {
@@ -149,12 +162,17 @@ class User extends Common {
 		if (!isset($data['num'])) {
 			$data['num'] = 5;
 		}
+		if (!isset($data['order'])) {
+			$data['order'] = 'id';
+		}
 		if (isset($data['search'])) {
 			$res = db('user')->where('user_name|user_phone|user_email', 'like', '%' . $data['search'] . '%')
+				->order($data['order'])
 				->page($data['page'], $data['num'])
 				->select();
 		} else {
 			$res = db('user')
+				->order($data['order'] . ' desc')
 				->page($data['page'], $data['num'])
 				->select();
 		}
@@ -175,10 +193,11 @@ class User extends Common {
 			$this->return_msg(400, '未找到用户信息');
 		} else {
 			unset($res['user_psd']);
-			$fans_num = db('userrship')->where('followers_id', $data['user_id'])->count();
-			$followers_num = db('userrship')->field('followers_id')->where('fans_id', $data['user_id'])->count();
+			$fans_num = db('userrship')->where('fans_id', $data['user_id'])->count();
+			$followers_num = db('userrship')->field('followers_id')->where('followers_id', $data['user_id'])->count();
 			$res['user_rship']['fans_num'] = $fans_num;
 			$res['user_rship']['followers_num'] = $followers_num;
+			$res['user_rship']['is_fans'] = $this->is_fans($data['user_id'], $data['uid']);
 			$this->return_msg(200, '查询用户信息成功', $res);
 		}
 	}
@@ -202,16 +221,23 @@ class User extends Common {
 		if (!isset($data['num'])) {
 			$data['num'] = 5;
 		}
-		$join = [['erhuo_user u', 'u.user_id = s.' . $join_type . '_id']];
+		$join = [['erhuo_user u', 'u.user_id = s.' . $data['type'] . '_id']];
 		$res = db('userrship')->alias('s')->field($field)
 			->join($join)
-			->where($data['type'] . '_id', $data['user_id'])
+			->where($join_type . '_id', $data['user_id'])
 			->page($data['page'], $data['num'])
 			->select();
+		$total = db('userrship')->alias('s')->field($field)
+			->join($join)
+			->where($join_type . '_id', $data['user_id'])->count();
+		// 查询当前用户是否关注其粉丝/关注
+		foreach ($res as $key => $value) {
+			$res[$key]['is_fans'] = $this->is_fans('user', $res[$key]['user_id'], $data['uid']);
+		}
 		if (!is_array($res)) {
 			$this->return_msg(400, '查找失败');
 		} else {
-			$this->return_msg(200, '查找成功', $res);
+			$this->return_msg(200, '查找成功', $res, $total);
 		}
 	}
 }

@@ -15,13 +15,15 @@ Route::domain('api', 'api');
 
 Route::get('user', 'user/login');
 // 获取验证码
-Route::get('code/:time/:token/:username/:is_exist', 'code/get_code');
+// Route::get('code/get_code/:time/:token/:username/:is_exist', 'code/get_code');
 // 用户注册
 Route::post('user/register', 'user/register');
 // 用户登录
 Route::post('user/login', 'user/login');
 // 用户退出登录
 Route::get('user/login_out', 'user/login_out');
+// 是否登录
+Route::get('user/is_login', 'user/is_login');
 // 上传图片
 Route::post('user/upload', 'user/upload');
 // 修改密码
@@ -50,10 +52,14 @@ Route::post('goods/add', 'goods/add');
 Route::get('goods/get', 'goods/get');
 // 获得单个商品
 Route::get('goods/get_one', 'goods/get_one');
+// 上传图片
+Route::post('goods/upload', 'goods/upload');
 // 修改商品
 Route::post('goods/edit', 'goods/edit');
 // 删除商品
 Route::delete('goods/delete', 'goods/delete');
+// 获得热搜
+Route::get('goods/get_hot', 'goods/get_hot');
 
 // 获取分类
 Route::get('classify/get', 'classify/get');
