@@ -197,14 +197,16 @@ class User extends Common {
 			$followers_num = db('userrship')->field('followers_id')->where('followers_id', $data['user_id'])->count();
 			$res['user_rship']['fans_num'] = $fans_num;
 			$res['user_rship']['followers_num'] = $followers_num;
-			$res['user_rship']['is_fans'] = $this->is_fans($data['user_id'], $data['uid']);
+			if (session('user_id')) {
+				$res['is_fans'] = $this->is_fans('user', $data['user_id'], session('user_id'));
+			}
 			$this->return_msg(200, '查询用户信息成功', $res);
 		}
 	}
 	// 关注与取关
 	public function follow() {
 		$data = $this->params;
-		$this->common_follow($data['user_id'], $data['followers_id'], 'user');
+		$this->common_follow($data['followers_id'], 'user');
 	}
 	// 获得 粉丝关注
 	public function get_follower() {
@@ -230,10 +232,13 @@ class User extends Common {
 		$total = db('userrship')->alias('s')->field($field)
 			->join($join)
 			->where($join_type . '_id', $data['user_id'])->count();
-		// 查询当前用户是否关注其粉丝/关注
-		foreach ($res as $key => $value) {
-			$res[$key]['is_fans'] = $this->is_fans('user', $res[$key]['user_id'], $data['uid']);
+		if (session('user_id')) {
+			foreach ($res as $key => $value) {
+				$res[$key]['is_fans'] = $this->is_fans('user', $res[$key]['user_id'], session('user_id'));
+			}
 		}
+		// 查询当前用户是否关注其粉丝/关注
+
 		if (!is_array($res)) {
 			$this->return_msg(400, '查找失败');
 		} else {

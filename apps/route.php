@@ -52,12 +52,17 @@ Route::post('goods/add', 'goods/add');
 Route::get('goods/get', 'goods/get');
 // 获得单个商品
 Route::get('goods/get_one', 'goods/get_one');
+Route::get('goods/get_edit', 'goods/get_edit');
 // 上传图片
 Route::post('goods/upload', 'goods/upload');
+// 删除上传图片
+Route::post('goods/del_img', 'goods/del_img');
 // 修改商品
 Route::post('goods/edit', 'goods/edit');
 // 删除商品
 Route::delete('goods/delete', 'goods/delete');
+// 关注与取关
+Route::post('goods/follow', 'goods/follow');
 // 获得热搜
 Route::get('goods/get_hot', 'goods/get_hot');
 

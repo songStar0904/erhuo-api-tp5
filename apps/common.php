@@ -76,14 +76,13 @@ class Common extends Controller {
 			),
 			'get_one' => array(
 				'uid' => 'number',
-				'user_id' => 'number',
+				'user_id' => 'require|number',
 			),
 			'follow' => array(
-				'user_id' => 'require|number',
 				'followers_id' => 'require|number',
 			),
 			'get_follower' => array(
-				'uid' => 'require|number',
+				'uid' => 'number',
 				'user_id' => 'require|number',
 				'type' => 'require|check_name:fans,followers'),
 		),
@@ -111,6 +110,9 @@ class Common extends Controller {
 			'get_one' => array(
 				'goods_id' => 'require|number',
 			),
+			'get_edit' => array(
+				'goods_id' => 'require|number',
+			),
 			'edit' => array(
 				'goods_uid' => 'require|number',
 				'goods_icon' => 'require|array',
@@ -121,13 +123,17 @@ class Common extends Controller {
 				'goods_nprice' => 'require|number',
 				'goods_summary' => 'require|max:255',
 			),
+			'follow' => array(
+				'followers_id' => 'require|number',
+			),
 			'upload' => array(
 				'goods_icon' => 'require|image|fileSize:2000000|fileExt:jpg,png,bmp,jpeg',
 			),
+			'del_img' => array(
+				'goods_id' => 'require|number',
+				'url' => 'require',
+			),
 			'delete' => array(
-				'goods_id' => 'require|number'),
-			'follow' => array(
-				'user_id' => 'require|number',
 				'goods_id' => 'require|number',
 			),
 			'get_hot' => array(
@@ -352,29 +358,35 @@ class Common extends Controller {
 		}
 	}
 	// 用户关注用户和商品
-	public function common_follow($fans_id, $followers_id, $type) {
-		$has = db($type . 'rship')->where('fans_id', $fans_id)
-			->where('followers_id', $followers_id)
-			->find();
-		if ($has) {
-			$msg = '取关';
-			$result = false;
-			$res = db($type . 'rship')->where('fans_id', $fans_id)
+	public function common_follow($followers_id, $type) {
+		if (session('user_id')) {
+			$fans_id = session('user_id');
+			$has = db($type . 'rship')->where('fans_id', $fans_id)
 				->where('followers_id', $followers_id)
-				->delete();
+				->find();
+			if ($has) {
+				$msg = '取关';
+				$result = false;
+				$res = db($type . 'rship')->where('fans_id', $fans_id)
+					->where('followers_id', $followers_id)
+					->delete();
+			} else {
+				$msg = '关注';
+				$result = true;
+				$data['fans_id'] = $fans_id;
+				$data['followers_id'] = $followers_id;
+				$data['follower_time'] = time();
+				$res = db($type . 'rship')->insert($data);
+			}
+			if ($res) {
+				$this->return_msg(200, $msg . '成功', $result);
+			} else {
+				$this->return_msg(400, $msg . '失败');
+			}
 		} else {
-			$msg = '关注';
-			$result = true;
-			$data['fans_id'] = $fans_id;
-			$data['followers_id'] = $followers_id;
-			$data['follower_time'] = time();
-			$res = db($type . 'rship')->insert($data);
+			$this->return_msg(400, '请先登录');
 		}
-		if ($res) {
-			$this->return_msg(200, $msg . '成功', $result);
-		} else {
-			$this->return_msg(400, $msg . '失败');
-		}
+
 	}
 	// 单个用户间是否关注 uid 访问者id
 	public function is_fans($type, $user_id, $uid) {
@@ -427,7 +439,7 @@ class Common extends Controller {
 				}
 			} else {
 				if (substr($k, 0, $len) == $name) {
-					$data[$name][substr($k, $len + 1)] = $value;
+					$data[$name][substr($k, $len + 1)] = $val;
 					unset($data[$k]);
 				}
 			}

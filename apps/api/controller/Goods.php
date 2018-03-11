@@ -27,7 +27,7 @@ class Goods extends Common {
 			$data['num'] = 5;
 		}
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_type, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
 		$has_search = !isset($data['search']) ? 0 : 1;
 		$_db = db('goods')->alias('g')->join($join)->field($field);
 		$params = [];
@@ -48,6 +48,7 @@ class Goods extends Common {
 			$total = $_db->where('goods_name', 'like', '%' . $data['search'] . '%')->where($params)->count();
 			break;
 		}
+
 		if ($res !== false) {
 			$res = $this->arrange_data($res, 'gclassify');
 			$res = $this->arrange_data($res, 'user');
@@ -58,10 +59,30 @@ class Goods extends Common {
 					$res[$key]['goods_icon'][$k]['url'] = $val['gIcon_url'];
 				}
 				// 收藏 留言
+				$res[$key]['fans_num'] = db('goodsrship')->where('followers_id', $value['goods_id'])->count();
+			}
+			// 查询当前用户是否关注其粉丝/关注
+			foreach ($res as $key => $value) {
+				$res[$key]['is_fans'] = $this->is_fans('goods', $res[$key]['goods_id'], session('user_id'));
 			}
 			$this->return_msg(200, '查询商品成功', $res, $total);
 		} else {
 			$this->return_msg(400, '查询商品失败', $res);
+		}
+	}
+	public function get_edit() {
+		$data = $this->params;
+		$res = db('goods')->where('goods_id', $data['goods_id'])->select()[0];
+		if ($res) {
+			$res['goods_summary'] = htmlspecialchars_decode($res['goods_summary']);
+			$res['goods_address'] = htmlspecialchars_decode($res['goods_address']);
+			$icon = db('gicon')->where('gIcon_gid', $res['goods_id'])->field('gIcon_url')->select();
+			foreach ($icon as $k => $val) {
+				$res['goods_icon'][$k]['url'] = $val['gIcon_url'];
+			}
+			$this->return_msg(200, '查询商品成功', $res);
+		} else {
+			$this->return_msg(400, '修改商品失败', $res);
 		}
 	}
 	public function get_one() {
@@ -69,20 +90,34 @@ class Goods extends Common {
 		// 浏览数+1
 		$view = db('goods')->where('goods_id', $data['goods_id'])->setInc('goods_view');
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
-		$res = db('goods')->alias('g')->join($join)->field($field)->where('goods_id', $data['goods_id'])->select();
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_address, goods_type, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon, user_sex, user_sid';
+		$res = db('goods')->alias('g')->join($join)->field($field)->where('goods_id', $data['goods_id'])->find();
 		if ($res) {
-			$res = $res[0];
-			$res['goods_detail'] = htmlspecialchars_decode($res['goods_detail']);
+			$res = $res;
+			$uid = session('user_id');
+			if ($uid) {
+				$res['user']['is_fans'] = $this->is_fans('user', $res['goods_id'], $uid);
+			}
+			$res['goods_summary'] = htmlspecialchars_decode($res['goods_summary']);
+			$res['goods_address'] = htmlspecialchars_decode($res['goods_address']);
 			// 这里还要整理数据
 			$res = $this->arrange_data($res, 'user');
+
 			$res = $this->arrange_data($res, 'gclassify');
 			$res['goods_lmsg'] = $this->get_lmsg($data['goods_id'], 'goods');
 			// 记录浏览记录
-			$uid = session('user_id');
+
+			$res['is_fans'] = $this->is_fans('goods', $data['goods_id'], $uid);
 			if ($uid) {
 				$this->record($uid, $data['goods_id']);
 			}
+			// 获得图片
+			$icon = db('gicon')->where('gIcon_gid', $res['goods_id'])->field('gIcon_url')->select();
+			foreach ($icon as $k => $val) {
+				$res['goods_icon'][$k]['url'] = $val['gIcon_url'];
+			}
+			// 收藏 留言
+			$res['fans_num'] = db('goodsrship')->where('followers_id', $res['goods_id'])->count();
 			$this->return_msg(200, '查询商品成功', $res);
 		} else {
 			$this->return_msg(400, '查询商品失败', $res);
@@ -96,6 +131,23 @@ class Goods extends Common {
 			$this->return_msg(200, '修改商品成功', $res);
 		} else {
 			$this->return_msg(400, '修改商品失败', $res);
+		}
+	}
+	public function del_img() {
+		$data = $this->params;
+		//获取$url有效字段（去掉网址）
+		$str = substr($data['url'], 20); //$str = 'up/avatar/59b25bcfcaac6.jpg'
+		//file文件路径
+		$filename = './' . $str;
+		if (file_exists($filename)) {
+			$res = db('gicon')->where('gIcon_gid', $data['goods_id'])->where('gIcon_url', $data['url'])->delete();
+		} else {
+			$this->return_msg(400, '未找到图片');
+		}
+		if ($res && unlink($filename)) {
+			$this->return_msg(200, '删除图片成功', $res);
+		} else {
+			$this->return_msg(400, '删除图片失败', $res);
 		}
 	}
 	public function upload() {
@@ -119,7 +171,43 @@ class Goods extends Common {
 	}
 	public function follow() {
 		$data = $this->params;
-		$this->common_follow($data['user_id'], $data['goods_id'], 'goods');
+		$this->common_follow($data['followers_id'], 'goods');
+	}
+	// 获得 粉丝关注
+	public function get_follower() {
+		$data = $this->params;
+		if ($data['type'] == 'fans') {
+			$join_type = 'followers';
+		} else {
+			$join_type = 'fans';
+		}
+		if (!isset($data['page'])) {
+			$data['page'] = 1;
+		}
+		if (!isset($data['num'])) {
+			$data['num'] = 5;
+		}
+		$join = [['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_view, gclassify_id, gclassify_name';
+		$res = db('goodsrship')->alias('s')->field($field)
+			->join($join)
+			->where($join_type . '_id', $data['user_id'])
+			->page($data['page'], $data['num'])
+			->select();
+		$total = db('goodsrship')->alias('s')->field($field)
+			->join($join)
+			->where($join_type . '_id', $data['user_id'])->count();
+		if (isset($data['user_id'])) {
+			// 查询当前用户是否关注其粉丝/关注
+			foreach ($res as $key => $value) {
+				$res[$key]['is_fans'] = $this->is_fans('goods', $res[$key]['user_id'], session('user_id'));
+			}
+		}
+		if (!is_array($res)) {
+			$this->return_msg(400, '查找失败');
+		} else {
+			$this->return_msg(200, '查找成功', $res, $total);
+		}
 	}
 	public function get_hot() {
 		$data = $this->params;
