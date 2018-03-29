@@ -50,6 +50,8 @@ Route::post('user/send_lmsg', 'user/send_lmsg');
 Route::post('goods/add', 'goods/add');
 // 获得商品
 Route::get('goods/get', 'goods/get');
+
+Route::get('goods/get_follower', 'goods/get_follower');
 // 获得单个商品
 Route::get('goods/get_one', 'goods/get_one');
 Route::get('goods/get_edit', 'goods/get_edit');
@@ -83,3 +85,24 @@ Route::get('main/get', 'main/get');
 Route::get('admin/get_fmsg', 'admin/get_fmsg');
 // 修改反馈状态
 Route::post('admin/edit_fmsg', 'admin/edit_fmsg');
+// 审核商品
+Route::post('admin/pass_goods', 'admin/pass_goods');
+// 发布公告
+Route::post('admin/send_notice', 'admin/send_notice');
+
+// 发表评论/留言/回复
+Route::post('messge/send', 'messge/send');
+// 点赞
+Route::post('messge/praise', 'messge/praise');
+// 获得消息/数量
+Route::get('messge/get', 'messge/get');
+Route::get('messge/get_by_id', 'messge/get_by_id');
+// 获得公告
+Route::get('messge/get_notice', 'messge/get_notice');
+Route::post('messge/change_status', 'messge/change_status');
+// 删除
+Route::delete('messge/delete', 'messge/delete');
+
+// 动态
+Route::post('dynamic/add', 'dynamic/add');
+Route::get('dynamic/get', 'dynamic/get');

@@ -65,6 +65,7 @@ class Common extends Controller {
 				'fmsg_content' => 'require|max:255'),
 			'send_lmsg' => array(
 				'lmsg_id' => 'number',
+				'lmsg_lid' => 'number',
 				'lmsg_rid' => 'require|number',
 				'lmsg_sid' => 'require|number',
 				'lmsg_gid' => 'require|number',
@@ -110,6 +111,10 @@ class Common extends Controller {
 			'get_one' => array(
 				'goods_id' => 'require|number',
 			),
+			'get_follower' => array(
+				'user_id' => 'require|number',
+				'page' => 'number',
+				'num' => 'number'),
 			'get_edit' => array(
 				'goods_id' => 'require|number',
 			),
@@ -148,7 +153,14 @@ class Common extends Controller {
 				'fmsg_uid' => 'number'),
 			'edit_fmsg' => array(
 				'fmsg_status' => 'require|number',
-				'fmsg_id' => 'require|number')),
+				'fmsg_id' => 'require|number'),
+			'pass_goods' => array(
+				'goods_id' => 'require|number',
+				'goods_status' => 'require|number'),
+			'send_notice' => array(
+				'notice_uid' => 'number',
+				'notice_content' => 'require',
+				'notice_time' => 'number')),
 		'Classify' => array(
 			'get' => array(
 				'type' => 'require'),
@@ -161,10 +173,41 @@ class Common extends Controller {
 				'name' => 'require|chs|max:6'),
 			'delete' => array(
 				'type' => 'require',
-				'id' => 'require|number')));
+				'id' => 'require|number')),
+		'Message' => array(
+			'send' => array(
+				'type' => 'require',
+				'id' => 'require|number',
+				'lid' => 'require|number',
+				'rid' => 'require|number',
+				'content' => 'require|max:255'),
+			'get' => array(
+				'type' => 'require',
+				'status' => 'require|number'),
+			'get_by_id' => array(
+				'type' => 'require',
+				'gid' => 'require|number'),
+			'change_status' => array(
+				'type' => 'require',
+				'lmsg_id' => 'require|number',
+				'status' => 'require|number'),
+			'delete' => array(
+				'type' => 'require',
+				'lmsg_id' => 'require|number'),
+			'get_notice' => array(
+			),
+			'praise' => array(
+				'type' => 'require|number',
+				'mid' => 'require|number')),
+		'Dynamic' => array(
+			'add' => array('content' => 'require|max:233'),
+			'get' => array(
+				'type' => 'require|number',
+				'page' => 'number',
+				'num' => 'number')));
 	protected function _initialize() {
 		parent::_initialize();
-		header("Access-Control-Allow-Origin: http://localhost:3000");
+		header("Access-Control-Allow-Origin: *");
 		header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 		header("Access-Control-Allow-Credentials: true");
 		header("Access-Control-Allow-Headers: Content-Type, X-Requested-With, Cache-Control,accept");
@@ -357,6 +400,14 @@ class Common extends Controller {
 			);
 		}
 	}
+	// 判断是否登录
+	public function login_uid() {
+		if (session('user_id')) {
+			return session('user_id');
+		} else {
+			$this->return_msg(400, '请先登录');
+		}
+	}
 	// 用户关注用户和商品
 	public function common_follow($followers_id, $type) {
 		if (session('user_id')) {
@@ -412,11 +463,51 @@ class Common extends Controller {
 	// 获得留言
 	public function get_lmsg($id, $type) {
 		$join = [['erhuo_user s', 's.user_id = l.lmsg_sid'], ['erhuo_user r', 'r.user_id = l.lmsg_rid']];
-		$field = 'lmsg_id, lmsg_content,r.user_id as ruser_id,r.user_icon as ruser_icon,r.user_name as ruser_name,s.user_id as suser_id, s.user_name as suser_name, s.user_icon as suser_icon, lmsg_content, lmsg_status';
+		$field = 'lmsg_id, lmsg_lid, lmsg_content,r.user_id as ruser_id,r.user_icon as ruser_icon,r.user_name as ruser_name,s.user_id as suser_id, s.user_name as suser_name, s.user_icon as suser_icon, lmsg_content, lmsg_star, lmsg_status, lmsg_time';
 		$res = db('lmsg')->alias('l')->join($join)->field($field)->where('lmsg_gid', $id)->order('lmsg_time desc')->select();
 		$res = $this->arrange_data($res, 'ruser');
 		$res = $this->arrange_data($res, 'suser');
-		return $res;
+		$data = [];
+		foreach ($res as $key => $value) {
+			if ($value['lmsg_lid'] === 0) {
+				$value['praise_num'] = $this->get_praise_num(0, $value['lmsg_id']);
+				$value['is_praise'] = $this->is_praise(0, $value['lmsg_id']);
+				array_push($data, $value);
+			}
+		}
+		foreach ($res as $key => $value) {
+			if ($value['lmsg_lid'] !== 0) {
+				foreach ($data as $k => $val) {
+					if ($value['lmsg_lid'] === $val['lmsg_id']) {
+						if (!isset($data[$k]['children'])) {
+							$data[$k]['children'] = [];
+						}
+						array_push($data[$k]['children'], $value);
+					}
+				}
+			}
+		}
+
+		return $data;
+	}
+	// 获得点赞数量
+	public function get_praise_num($type, $mid) {
+		$count = db('praise')->where('praise_type=' . $type . ' AND praise_mid=' . $mid)->count();
+		return $count;
+	}
+	// 是否点赞
+	public function is_praise($type, $mid) {
+		$uid = session('user_id');
+		if ($uid) {
+			$res = db('praise')->where('praise_type=' . $type . ' AND praise_mid=' . $mid . ' AND praise_uid=' . $uid)->find();
+			if ($res) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 	// 添加搜索
 	public function add_search($search) {
@@ -445,6 +536,40 @@ class Common extends Controller {
 			}
 		}
 		return $data;
+	}
+	// 发布商品动态
+	public function dynamic_by_goods($goods) {
+		$params['dynamic_time'] = time();
+		$params['dynamic_content'] = '我发布了一个二货，快来看看~';
+		$params['dynamic_uid'] = $goods['user']['id'];
+		$params['dynamic_gid'] = $goods['goods_id'];
+		$params['dynamic_type'] = 2;
+		$res = db('dynamic')->insert($params);
+		if (!$res) {
+			$this->return_msg(400, '发布动态失败');
+		}
+	}
+	// 获取单个商品
+	public function get_one_by_dynamic($gid) {
+		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary,goods_address, goods_time, goods_type, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
+		$res = db('goods')->alias('g')->join($join)->field($field)->where('goods_id', $gid)->find();
+		if ($res) {
+			$res = $this->arrange_data($res, 'gclassify');
+			$res = $this->arrange_data($res, 'user');
+			// 获得图片
+			$icon = db('gicon')->where('gIcon_gid', $res['goods_id'])->field('gIcon_url')->select();
+			foreach ($icon as $k => $val) {
+				$res['goods_icon'][$k]['url'] = $val['gIcon_url'];
+			}
+			// 收藏 留言
+			$res['fans_num'] = db('goodsrship')->where('followers_id', $gid)->count();
+			$res['goods_lmsg'] = $this->get_lmsg($gid, 'goods');
+			$res['is_fans'] = $this->is_fans('goods', $gid, session('user_id'));
+			return $res;
+		} else {
+			return false;
+		}
 	}
 
 }

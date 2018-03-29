@@ -15,6 +15,8 @@ class Goods extends Common {
 				$icon_data['gIcon_url'] = $value['url'];
 				db('gicon')->insert($icon_data);
 			}
+			$goods = $this->get_one_by_dynamic($res);
+			$this->dynamic_by_goods($goods);
 			$this->return_msg(200, '添加商品成功', $data);
 		}
 	}
@@ -27,7 +29,7 @@ class Goods extends Common {
 			$data['num'] = 5;
 		}
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_type, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary,goods_address, goods_time, goods_type, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon';
 		$has_search = !isset($data['search']) ? 0 : 1;
 		$_db = db('goods')->alias('g')->join($join)->field($field);
 		$params = [];
@@ -40,11 +42,11 @@ class Goods extends Common {
 		}
 		switch ($has_search) {
 		case 0:
-			$res = $_db->page($data['page'], $data['num'])->where($params)->select();
+			$res = $_db->page($data['page'], $data['num'])->order('goods_time desc')->where($params)->select();
 			$total = $_db->where($params)->count();
 			break;
 		case 1:
-			$res = $_db->where('goods_name', 'like', '%' . $data['search'] . '%')->where($params)->page($data['page'], $data['num'])->select();
+			$res = $_db->where('goods_name', 'like', '%' . $data['search'] . '%')->where($params)->page($data['page'], $data['num'])->order('goods_time desc')->select();
 			$total = $_db->where('goods_name', 'like', '%' . $data['search'] . '%')->where($params)->count();
 			break;
 		}
@@ -60,6 +62,7 @@ class Goods extends Common {
 				}
 				// 收藏 留言
 				$res[$key]['fans_num'] = db('goodsrship')->where('followers_id', $value['goods_id'])->count();
+				$res[$key]['msg_num'] = db('lmsg')->where('lmsg_gid', $value['goods_id'])->where('lmsg_lid', 0)->count();
 			}
 			// 查询当前用户是否关注其粉丝/关注
 			foreach ($res as $key => $value) {
@@ -72,7 +75,7 @@ class Goods extends Common {
 	}
 	public function get_edit() {
 		$data = $this->params;
-		$res = db('goods')->where('goods_id', $data['goods_id'])->select()[0];
+		$res = db('goods')->where('goods_id', $data['goods_id'])->find();
 		if ($res) {
 			$res['goods_summary'] = htmlspecialchars_decode($res['goods_summary']);
 			$res['goods_address'] = htmlspecialchars_decode($res['goods_address']);
@@ -90,25 +93,21 @@ class Goods extends Common {
 		// 浏览数+1
 		$view = db('goods')->where('goods_id', $data['goods_id'])->setInc('goods_view');
 		$join = [['erhuo_user u', 'u.user_id = g.goods_uid'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_address, goods_type, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon, user_sex, user_sid';
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_address, goods_type, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon, user_sex, user_sid, qq, phone, wechat';
 		$res = db('goods')->alias('g')->join($join)->field($field)->where('goods_id', $data['goods_id'])->find();
 		if ($res) {
 			$res = $res;
-			$uid = session('user_id');
-			if ($uid) {
-				$res['user']['is_fans'] = $this->is_fans('user', $res['goods_id'], $uid);
-			}
 			$res['goods_summary'] = htmlspecialchars_decode($res['goods_summary']);
 			$res['goods_address'] = htmlspecialchars_decode($res['goods_address']);
 			// 这里还要整理数据
 			$res = $this->arrange_data($res, 'user');
 
 			$res = $this->arrange_data($res, 'gclassify');
-			$res['goods_lmsg'] = $this->get_lmsg($data['goods_id'], 'goods');
 			// 记录浏览记录
-
-			$res['is_fans'] = $this->is_fans('goods', $data['goods_id'], $uid);
+			$uid = session('user_id');
 			if ($uid) {
+				$res['is_fans'] = $this->is_fans('goods', $data['goods_id'], $uid);
+				$res['user']['is_fans'] = $this->is_fans('user', $res['user']['id'], $uid);
 				$this->record($uid, $data['goods_id']);
 			}
 			// 获得图片
@@ -118,6 +117,7 @@ class Goods extends Common {
 			}
 			// 收藏 留言
 			$res['fans_num'] = db('goodsrship')->where('followers_id', $res['goods_id'])->count();
+			$res['goods_lmsg'] = $this->get_lmsg($data['goods_id'], 'goods');
 			$this->return_msg(200, '查询商品成功', $res);
 		} else {
 			$this->return_msg(400, '查询商品失败', $res);
@@ -176,23 +176,20 @@ class Goods extends Common {
 	// 获得 粉丝关注
 	public function get_follower() {
 		$data = $this->params;
-		if ($data['type'] == 'fans') {
-			$join_type = 'followers';
-		} else {
-			$join_type = 'fans';
-		}
+		$join_type = 'fans';
 		if (!isset($data['page'])) {
 			$data['page'] = 1;
 		}
 		if (!isset($data['num'])) {
 			$data['num'] = 5;
 		}
-		$join = [['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid']];
-		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_time, goods_view, gclassify_id, gclassify_name';
+		$join = [['erhuo_goods g', 'g.goods_id = s.followers_id'], ['erhuo_gclassify c', 'c.gclassify_id = g.goods_cid'], ['erhuo_user u', 'u.user_id = g.goods_uid']];
+		$field = 'goods_id, goods_name, goods_status, goods_nprice, goods_oprice, goods_summary, goods_address, goods_type, goods_time, goods_view, gclassify_id, gclassify_name, user_id, user_name, user_icon, user_sex, user_sid, follower_time';
 		$res = db('goodsrship')->alias('s')->field($field)
 			->join($join)
 			->where($join_type . '_id', $data['user_id'])
 			->page($data['page'], $data['num'])
+			->order('follower_time desc')
 			->select();
 		$total = db('goodsrship')->alias('s')->field($field)
 			->join($join)
@@ -200,9 +197,17 @@ class Goods extends Common {
 		if (isset($data['user_id'])) {
 			// 查询当前用户是否关注其粉丝/关注
 			foreach ($res as $key => $value) {
-				$res[$key]['is_fans'] = $this->is_fans('goods', $res[$key]['user_id'], session('user_id'));
+				// 获得图片
+				$icon = db('gicon')->where('gIcon_gid', $value['goods_id'])->field('gIcon_url')->select();
+				foreach ($icon as $k => $val) {
+					$res[$key]['goods_icon'][$k]['url'] = $val['gIcon_url'];
+				}
+				$res[$key]['is_fans'] = $this->is_fans('goods', $res[$key]['goods_id'], session('user_id'));
 			}
 		}
+		// 这里还要整理数据
+		$res = $this->arrange_data($res, 'user');
+		$res = $this->arrange_data($res, 'gclassify');
 		if (!is_array($res)) {
 			$this->return_msg(400, '查找失败');
 		} else {

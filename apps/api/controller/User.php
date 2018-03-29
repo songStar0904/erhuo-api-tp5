@@ -20,6 +20,8 @@ class User extends Common {
 			unset($db_res['user_psd']);
 			session('user_id', $db_res['user_id']);
 			session('user_access', $db_res['user_access']);
+
+			$db_res['ship'] = $this->get_ship($db_res['user_id']);
 			$this->return_msg(200, '登录成功', $db_res);
 		}
 	}
@@ -41,7 +43,6 @@ class User extends Common {
 	}
 	public function register() {
 		$data = $this->params;
-		// dump($_SESSION);
 		$this->check_code($data['user_name'], $data['code']);
 		$user_name_type = $this->check_username($data['user_name']);
 		switch ($user_name_type) {
@@ -118,7 +119,7 @@ class User extends Common {
 	public function edit() {
 		$data = $this->params;
 		$check = db('user')->where('user_name', $data['user_name'])->find();
-		if (!$check) {
+		if (!$check['user_id'] || $check['user_id'] == $data['user_id']) {
 			$res = db('user')->where('user_id', $data['user_id'])
 				->setField($data);
 			if ($res < 0) {
@@ -163,7 +164,7 @@ class User extends Common {
 			$data['num'] = 5;
 		}
 		if (!isset($data['order'])) {
-			$data['order'] = 'id';
+			$data['order'] = 'user_id';
 		}
 		if (isset($data['search'])) {
 			$res = db('user')->where('user_name|user_phone|user_email', 'like', '%' . $data['search'] . '%')
@@ -188,15 +189,12 @@ class User extends Common {
 	}
 	public function get_one() {
 		$data = $this->params;
-		$res = db('user')->where('user_id', $data['user_id'])->select()[0];
+		$res = db('user')->where('user_id', $data['user_id'])->find();
 		if ($res == false) {
 			$this->return_msg(400, '未找到用户信息');
 		} else {
 			unset($res['user_psd']);
-			$fans_num = db('userrship')->where('fans_id', $data['user_id'])->count();
-			$followers_num = db('userrship')->field('followers_id')->where('followers_id', $data['user_id'])->count();
-			$res['user_rship']['fans_num'] = $fans_num;
-			$res['user_rship']['followers_num'] = $followers_num;
+			$res['ship'] = $this->get_ship($data['user_id']);
 			if (session('user_id')) {
 				$res['is_fans'] = $this->is_fans('user', $data['user_id'], session('user_id'));
 			}
@@ -244,5 +242,17 @@ class User extends Common {
 		} else {
 			$this->return_msg(200, '查找成功', $res, $total);
 		}
+	}
+	public function get_ship($uid) {
+		$fans_num = db('userrship')->where('fans_id', $uid)->count();
+		$followers_num = db('userrship')->field('followers_id')->where('followers_id', $uid)->count();
+		$sell_num = db('goods')->where('goods_uid', $uid)->count();
+		$pop = $fans_num * 5 + $followers_num * 2 + $sell_num * 3;
+		$res['pop'] = $pop;
+		db('user')->where('user_id', $uid)->setField('user_pop', $pop);
+		$res['fans_num'] = $fans_num;
+		$res['followers_num'] = $followers_num;
+		$res['sell_num'] = $sell_num;
+		return $res;
 	}
 }

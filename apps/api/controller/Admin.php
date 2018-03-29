@@ -31,4 +31,27 @@ class Admin extends Common {
 			$this->return_msg(400, '修改反馈信息失败');
 		}
 	}
+	public function pass_goods() {
+		$data = $this->params;
+		$res = db('goods')->where('goods_id', $data['goods_id'])->setField('goods_status', $data['goods_status']);
+		if ($res !== false) {
+			$this->return_msg(200, '审核商品成功', intval($data['goods_status']));
+		} else {
+			$this->return_msg(400, '审核商品失败');
+		}
+	}
+	public function send_notice() {
+		$data = $this->params;
+		//$uid = $this->login_uid();
+		$data['notice_uid'] = 1;
+		if (!isset($data['notice_time'])) {
+			$data['notice_time'] = time();
+		}
+		$res = db('notice')->insertGetId($data);
+		if ($res) {
+			$this->return_msg(200, '发送公告成功', $res);
+		} else {
+			$this->return_msg(400, '发送公告失败');
+		}
+	}
 }
