@@ -86,6 +86,11 @@ class Common extends Controller {
 				'uid' => 'number',
 				'user_id' => 'require|number',
 				'type' => 'require|check_name:fans,followers'),
+<<<<<<< HEAD
+=======
+			'sold_goods'=>array(
+				'goods_id' => 'number|require')
+>>>>>>> 推广商品api 下架
 		),
 		'Code' => array(
 			'get_code' => array(
@@ -157,6 +162,12 @@ class Common extends Controller {
 			'pass_goods' => array(
 				'goods_id' => 'require|number',
 				'goods_status' => 'require|number'),
+<<<<<<< HEAD
+=======
+			'spread_goods' => array(
+				'goods_id' => 'require|number',
+				'goods_spread' => 'require|number'),
+>>>>>>> 推广商品api 下架
 			'send_notice' => array(
 				'notice_uid' => 'number',
 				'notice_content' => 'require',
@@ -204,7 +215,17 @@ class Common extends Controller {
 			'get' => array(
 				'type' => 'require|number',
 				'page' => 'number',
+<<<<<<< HEAD
 				'num' => 'number')));
+=======
+				'num' => 'number')),
+		'Report' => array(
+			'add' => array(
+				'report_type' => 'require|number',
+				'report_gid' => 'require|number',
+				'report_reason' => 'require',
+				'report_content' => 'max:255')));
+>>>>>>> 推广商品api 下架
 	protected function _initialize() {
 		parent::_initialize();
 		header("Access-Control-Allow-Origin: *");
@@ -352,8 +373,13 @@ class Common extends Controller {
 	public function check_code($username, $code) {
 		$last_time = session($username . '_last_send_time');
 		// dump($_SESSION);
+<<<<<<< HEAD
 		if (time() - $last_time > 60 * 5) {
 			$this->return_msg(400, '验证超时， 请在五分钟内验证');
+=======
+		if (time() - $last_time > 60 * 10) {
+			$this->return_msg(400, '验证超时， 请在十分钟内验证');
+>>>>>>> 推广商品api 下架
 		}
 
 		$md5_code = md5($username . '_' . md5($code));

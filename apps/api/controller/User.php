@@ -255,4 +255,21 @@ class User extends Common {
 		$res['sell_num'] = $sell_num;
 		return $res;
 	}
+<<<<<<< HEAD
+=======
+	public function sold_goods(){
+		$data = $this->params;
+		$uid = $this->login_uid();
+		$status = db('goods')->where($data['goods_id'])->value('goods_status');
+		if ($status <= 1) {
+			$this->return_msg(200, '此二货还未通过审核');
+		}
+		$res = db('goods')->where($data['goods_id'])->where('goods_uid', $uid)->setField('goods_status', 3);
+		if (!$res) {
+			$this->return_msg(400, '下架二货失败');
+		} else {
+			$this->return_msg(200, '下架二货成功', $res);
+		}
+	}
+>>>>>>> 推广商品api 下架
 }

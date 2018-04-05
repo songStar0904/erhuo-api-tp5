@@ -8,7 +8,10 @@ class Code extends Common {
 		$exist = $this->params['is_exist'];
 		$username_type = $this->check_username($username);
 		$this->get_code_by_username($username, $username_type, $exist);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 推广商品api 下架
 	}
 	// 获取验证码
 	public function get_code_by_username($username, $type, $exist) {
@@ -51,11 +54,20 @@ class Code extends Common {
 		$response = Sms::sendSms($phone, $code);
 		if ($response->Code !== 'OK') {
 			$this->return_msg(400, $response->Message);
+<<<<<<< HEAD
+=======
+		}else {
+			$this->return_msg(200, '短信发送成功，请查收');
+>>>>>>> 推广商品api 下架
 		}
 	}
 	// 发送验证码 给邮箱
 	public function send_code_to_email($email, $code) {
+<<<<<<< HEAD
 		$value['body'] = '这是测试邮件，您的验证码是' . $code . '，邮箱时间5分钟';
+=======
+		$value['body'] = '这是测试邮件，您的验证码是' . $code . '，邮箱时间10分钟';
+>>>>>>> 推广商品api 下架
 		$value['subject'] = '您有新的验证码!';
 		$value['return_msg'] = '验证码已发送成功，请注意查收！';
 		$this->send_email($email, $value);
