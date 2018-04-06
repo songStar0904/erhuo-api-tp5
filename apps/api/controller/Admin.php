@@ -40,9 +40,7 @@ class Admin extends Common {
 			$this->return_msg(400, '审核商品失败');
 		}
 	}
-<<<<<<< HEAD
-=======
-	public function spread_goods () {
+	public function spread_goods() {
 		$data = $this->params;
 		$res = db('goods')->where('goods_id', $data['goods_id'])->setField('goods_spread', $data['goods_spread']);
 		if ($res !== false) {
@@ -51,7 +49,6 @@ class Admin extends Common {
 			$this->return_msg(400, '推广商品失败');
 		}
 	}
->>>>>>> 推广商品api 下架
 	public function send_notice() {
 		$data = $this->params;
 		//$uid = $this->login_uid();

@@ -15,11 +15,7 @@ Route::domain('api', 'api');
 
 Route::get('user', 'user/login');
 // 获取验证码
-<<<<<<< HEAD
-// Route::get('code/get_code/:time/:token/:username/:is_exist', 'code/get_code');
-=======
 Route::get('code/get_code/:time/:token/:username/:is_exist', 'code/get_code');
->>>>>>> 推广商品api 下架
 // 用户注册
 Route::post('user/register', 'user/register');
 // 用户登录
@@ -50,12 +46,9 @@ Route::get('user/get_follower', 'user/get_follower');
 Route::post('user/send_fmsg', 'user/send_fmsg');
 // 留言
 Route::post('user/send_lmsg', 'user/send_lmsg');
-<<<<<<< HEAD
-=======
 // 下架二货
 Route::post('user/sold_goods', 'user/sold_goods');
 
->>>>>>> 推广商品api 下架
 // 添加商品
 Route::post('goods/add', 'goods/add');
 // 获得商品
@@ -97,11 +90,9 @@ Route::get('admin/get_fmsg', 'admin/get_fmsg');
 Route::post('admin/edit_fmsg', 'admin/edit_fmsg');
 // 审核商品
 Route::post('admin/pass_goods', 'admin/pass_goods');
-<<<<<<< HEAD
-=======
+
 // 推广商品
 Route::post('admin/spread_goods', 'admin/spread_goods');
->>>>>>> 推广商品api 下架
 // 发布公告
 Route::post('admin/send_notice', 'admin/send_notice');
 
@@ -120,18 +111,15 @@ Route::delete('messge/delete', 'messge/delete');
 
 // 动态
 Route::post('dynamic/add', 'dynamic/add');
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 Route::get('dynamic/get', 'dynamic/get');
-=======
+
 Route::get('dynamic/get', 'dynamic/get');
 
 // 举报
 Route::post('report/add', 'report/add');
->>>>>>> 推广商品api 下架
-=======
+
 Route::get('dynamic/get', 'dynamic/get');
 
 // 举报
 Route::post('report/add', 'report/add');
->>>>>>> 举报api
