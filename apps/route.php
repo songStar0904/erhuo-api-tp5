@@ -121,6 +121,7 @@ Route::delete('messge/delete', 'messge/delete');
 // 动态
 Route::post('dynamic/add', 'dynamic/add');
 <<<<<<< HEAD
+<<<<<<< HEAD
 Route::get('dynamic/get', 'dynamic/get');
 =======
 Route::get('dynamic/get', 'dynamic/get');
@@ -128,3 +129,9 @@ Route::get('dynamic/get', 'dynamic/get');
 // 举报
 Route::post('report/add', 'report/add');
 >>>>>>> 推广商品api 下架
+=======
+Route::get('dynamic/get', 'dynamic/get');
+
+// 举报
+Route::post('report/add', 'report/add');
+>>>>>>> 举报api

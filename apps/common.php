@@ -216,8 +216,11 @@ class Common extends Controller {
 				'type' => 'require|number',
 				'page' => 'number',
 <<<<<<< HEAD
+<<<<<<< HEAD
 				'num' => 'number')));
 =======
+=======
+>>>>>>> 举报api
 				'num' => 'number')),
 		'Report' => array(
 			'add' => array(
@@ -225,7 +228,10 @@ class Common extends Controller {
 				'report_gid' => 'require|number',
 				'report_reason' => 'require',
 				'report_content' => 'max:255')));
+<<<<<<< HEAD
 >>>>>>> 推广商品api 下架
+=======
+>>>>>>> 举报api
 	protected function _initialize() {
 		parent::_initialize();
 		header("Access-Control-Allow-Origin: *");

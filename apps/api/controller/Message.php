@@ -110,11 +110,15 @@ class Message extends Common {
 		if (isset($data['last_time'])) {
 			$last_time = db('user')->where('user_id', $uid)->field('user_lntime')->find()['user_lntime'];
 <<<<<<< HEAD
+<<<<<<< HEAD
 			$res = db('notice')->alias('n')->join($join)->field($field)->order('notice_time desc')->where('notice_lid=0 AND notice_time>' . $last_time)->whereOr('notice_lid =' . $uid . 'AND notice_time>' . $last_time)->select();
 			dump(db()->getLastSql());
 =======
 			$res = db('notice')->alias('n')->join($join)->field($field)->order('notice_time desc')->where('notice_lid = 0 OR notice_lid =' . $uid)->where('notice_time > ' . $last_time)->select();
 >>>>>>> 推广商品api 下架
+=======
+			$res = db('notice')->alias('n')->join($join)->field($field)->order('notice_time desc')->where('notice_lid = 0 OR notice_lid =' . $uid)->where('notice_time > ' . $last_time)->select();
+>>>>>>> 举报api
 		} else {
 			$res = $db->where('notice_lid', 0)->whereOr('notice_lid', $uid)->select();
 		}
